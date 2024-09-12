@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "test": "jest",
     "start": "node ./bin/www",
     "devstart": "node --watch ./bin/www",
     "serverstart": "DEBUG=jyronue-backend:* & npm run devstart"
@@ -11,5 +12,9 @@
     "debug": "~2.6.9",
     "express": "^4.21.0",
     "morgan": "~1.9.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
   }
 }
