@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "test": "jest",
+    "test": "NODE_ENV=test && jest",
+    "test-watch": "NODE_ENV=test && jest --watchAll",
     "start": "node ./bin/www",
     "devstart": "node --watch ./bin/www",
     "serverstart": "DEBUG=jyronue-backend:* & npm run devstart"
