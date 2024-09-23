@@ -10,6 +10,7 @@ const userValidator = {
   username_signup: body("username", "Username is required")
     .trim()
     .isLength({ min: 1 })
+    .bail()
     .isLength({ max: 32 })
     .withMessage("Username cannot exceed 32 characters")
     .custom(async (value) => {
@@ -32,7 +33,7 @@ const userValidator = {
   password: body("password", "Password is required")
     .trim()
     .isLength({ min: 8 })
-    .withMessage("Password must contains at least 8 characters")
+    .withMessage("Password must contain at least 8 characters")
     .escape(),
 };
 
@@ -43,9 +44,13 @@ exports.user_signup_post = [
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      console.log(req.body.username.length);
-      return res.json({
-        errors: errors.array(),
+      const errorsList = errors.array().map((err) => {
+        return { field: err.path, value: err.value, msg: err.msg };
+      });
+
+      return res.status(422).json({
+        message: "Failed to create user account",
+        errors: errorsList,
       });
     }
 
@@ -63,7 +68,7 @@ exports.user_signup_post = [
         });
 
         res.json({
-          message: `successfully created an account with username ${req.body.username}`,
+          message: `Successfully created an account with username ${req.body.username}`,
         });
       })
     );
