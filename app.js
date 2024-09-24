@@ -13,6 +13,8 @@ passport.use(new LocalStrategy(passportConfig.strategy));
 passport.serializeUser(passportConfig.serializeUser);
 passport.deserializeUser(passportConfig.deserializeUser);
 
+const cors = require("cors");
+
 const indexRouter = require("./routes/index");
 const userRouter = require("./routes/user");
 
@@ -39,6 +41,8 @@ app.use(passport.session());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+app.use(cors({ credentials: true, origin: process.env.ORIGIN }));
 
 app.use("/", indexRouter);
 app.use("/user", userRouter);
