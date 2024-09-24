@@ -13,8 +13,8 @@ exports.createUser = async ({ username, password }) => {
 };
 
 exports.getUserByUsername = async ({ username }) => {
-  const user = await prisma.user.findUnique({
-    where: { username: username },
+  const user = await prisma.user.findFirst({
+    where: { username: { equals: username, mode: "insensitive" } },
   });
 
   return user;
