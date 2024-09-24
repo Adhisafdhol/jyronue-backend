@@ -115,4 +115,25 @@ describe("Test user signup post route", () => {
       })
       .expect(422, done);
   });
+  test("Cannot create an account with taken username even if it has different cases", (done) => {
+    request(app)
+      .post("/user/signup")
+      .type("form")
+      .send({
+        username: "Test_user_it_1",
+        password: "12345678",
+      })
+      .expect("Content-Type", /json/)
+      .expect({
+        message: "Failed to create user account",
+        errors: [
+          {
+            field: "username",
+            value: "Test_user_it_1",
+            msg: "Username is already taken",
+          },
+        ],
+      })
+      .expect(422, done);
+  });
 });
