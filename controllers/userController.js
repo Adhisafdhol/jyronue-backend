@@ -30,6 +30,22 @@ const userValidator = {
         throw new Error("Username is already taken");
       }
     }),
+  username_login: body("username", "Username is required")
+    .trim()
+    .isLength({ min: 1 })
+    .bail()
+    .isLength({ max: 32 })
+    .withMessage("Username cannot exceed 32 characters")
+    .custom(async (value) => {
+      const regex = new RegExp("^[a-zA-Z0-9_]+$");
+      const match = regex.test(value);
+      if (!match) {
+        throw new Error(
+          "Username must only contain letters, numbers, and underscores"
+        );
+      }
+    })
+    .escape(),
   password: body("password", "Password is required")
     .trim()
     .isLength({ min: 8 })
@@ -72,5 +88,53 @@ exports.user_signup_post = [
         });
       })
     );
+  }),
+];
+
+exports.user_login_get = (req, res, next) => {
+  const messages = req.session.messages;
+
+  if (messages) {
+    delete req.session.messages;
+
+    return res
+      .status(401)
+      .json({ message: "Failed to log in", error: messages[0] });
+  }
+
+  if (req.user) {
+    return res.json({
+      message: `Successfully logged in as ${req.user.username}`,
+    });
+  }
+
+  return res.json({
+    message: "Cannot access this page directly",
+  });
+};
+
+exports.user_login_post = [
+  userValidator.username_login,
+  userValidator.password,
+  (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const errorsList = errors.array().map((err) => {
+        return { field: err.path, value: err.value, msg: err.msg };
+      });
+
+      return res.status(422).json({
+        message: "Failed to log in",
+        errors: errorsList,
+      });
+    }
+
+    next();
+  },
+  passport.authenticate("local", {
+    successRedirect: "/user/login",
+    failureRedirect: "/user/login",
+    failureMessage: true,
   }),
 ];
