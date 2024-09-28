@@ -47,4 +47,29 @@ app.use(cors({ credentials: true, origin: process.env.ORIGIN }));
 app.use("/", indexRouter);
 app.use("/user", userRouter);
 
+app.use((req, res, next) => {
+  res.json({ message: "unhandle error" });
+});
+
+app.use((req, res, next) => {
+  const err = new Error("Not found");
+  err.status = 404;
+
+  next(err);
+});
+
+// error handler
+app.use((err, req, res, next) => {
+  // Send error message
+  res.status(err.status || 500);
+  res.json({
+    error:
+      req.app.get("env") === "development"
+        ? err.message
+        : err.status < 500
+        ? err.message
+        : "server error",
+  });
+});
+
 module.exports = app;
