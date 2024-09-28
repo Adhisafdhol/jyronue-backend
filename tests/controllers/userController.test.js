@@ -3,16 +3,43 @@ const db = require("../../db/queries");
 
 const express = require("express");
 const app = express();
+
+const session = require("express-session");
+
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
+const passportConfig = require("../../config/passportConfig");
+passport.use(new LocalStrategy(passportConfig.strategy));
+passport.serializeUser(passportConfig.serializeUser);
+passport.deserializeUser(passportConfig.deserializeUser);
+
+app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-const userController = require("../../controllers/userController");
-app.post("/user/signup", userController.user_signup_post);
+app.use(
+  session({
+    cookie: {
+      secure: false,
+    },
+    secret: "test",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+app.use(passport.session());
+
+const userRouter = require("../../routes/user");
+app.use("/user", userRouter);
 
 // Integration tests
 
 describe("Test user signup post route", () => {
-  afterAll(async () => {
-    await db.deleteUserByUsername({ username: "test_user_it_1" });
+  beforeAll(async () => {
+    try {
+      await db.deleteUserByUsername({ username: "test_user_it_1" });
+    } catch (err) {
+      console.log("nothing to delete");
+    }
   });
 
   test("Cannot create an account without username", (done) => {
@@ -135,5 +162,75 @@ describe("Test user signup post route", () => {
         ],
       })
       .expect(422, done);
+  });
+});
+
+describe("Test user login post route", () => {
+  test("Login post redirect to login get when both inputs are valid", (done) => {
+    request(app)
+      .post("/user/login")
+      .type("form")
+      .send({
+        username: "valid_user",
+        password: "12345678",
+      })
+      .expect(302)
+      .expect("Location", "/user/login")
+      .expect("set-cookie", /^connect.sid=/)
+      .end(done);
+  });
+
+  const agent = request.agent(app);
+
+  test("Cannot login with incorrect username", (done) => {
+    agent
+      .post("/user/login")
+      .type("form")
+      .send({
+        username: "invalid_user",
+        password: "12345678",
+      })
+      .redirects(1)
+      .expect("Content-Type", /json/)
+      .expect(401)
+      .expect({
+        message: "Failed to log in",
+        error: "Incorrect username",
+      })
+      .end(done);
+  });
+
+  test("Cannot login with incorrect password", (done) => {
+    agent
+      .post("/user/login")
+      .type("form")
+      .send({
+        username: "valid_user",
+        password: "12345678",
+      })
+      .redirects(1)
+      .expect("Content-Type", /json/)
+      .expect(401)
+      .expect({
+        message: "Failed to log in",
+        error: "Incorrect password",
+      })
+      .end(done);
+  });
+  test("Login successfully with valid credentials", (done) => {
+    agent
+      .post("/user/login")
+      .type("form")
+      .send({
+        username: "valid_user",
+        password: "valid_password",
+      })
+      .redirects(1)
+      .expect("Content-Type", /json/)
+      .expect(200)
+      .expect({
+        message: "Successfully logged in as valid_user",
+      })
+      .end(done);
   });
 });
