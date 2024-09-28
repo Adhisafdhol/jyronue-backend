@@ -78,8 +78,11 @@ exports.user_signup_post = [
           next(err);
         }
 
+        const username = req.body.username;
+
         await db.createUser({
-          username: req.body.username,
+          // Convert username into lowercase
+          username: username.toLowerCase(),
           password: hashedPassword,
         });
 
