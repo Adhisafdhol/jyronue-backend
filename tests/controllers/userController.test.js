@@ -195,7 +195,7 @@ describe("Test user login post route", () => {
       .expect(401)
       .expect({
         message: "Failed to log in",
-        error: "Incorrect username",
+        error: { field: "username", msg: "Incorrect username" },
       })
       .end(done);
   });
@@ -213,7 +213,7 @@ describe("Test user login post route", () => {
       .expect(401)
       .expect({
         message: "Failed to log in",
-        error: "Incorrect password",
+        error: { field: "password", msg: "Incorrect password" },
       })
       .end(done);
   });
