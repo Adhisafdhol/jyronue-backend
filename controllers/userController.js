@@ -100,9 +100,13 @@ exports.user_login_get = (req, res, next) => {
   if (messages) {
     delete req.session.messages;
 
-    return res
-      .status(401)
-      .json({ message: "Failed to log in", error: messages[0] });
+    return res.status(401).json({
+      message: "Failed to log in",
+      error: {
+        field: messages[0].includes("username") ? "username" : "password",
+        msg: messages[0],
+      },
+    });
   }
 
   if (req.user) {
@@ -111,7 +115,7 @@ exports.user_login_get = (req, res, next) => {
     });
   }
 
-  return res.json({
+  res.json({
     message: "Cannot access this page directly",
   });
 };
