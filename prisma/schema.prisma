@@ -26,6 +26,10 @@ model User {
   password   String
   followedBy Follows[] @relation("followedBy")
   following  Follows[] @relation("following")
+  posts      Post[]
+  comments   Comment[]
+  replies    Reply[]
+  liked      Like[]
 }
 
 model Follows {
@@ -35,4 +39,70 @@ model Follows {
   followingId  String
 
   @@id([followingId, followedById])
+}
+
+model Like {
+  id         String   @id @default(uuid())
+  author     User     @relation(fields: [authorid], references: [id])
+  authorid   String
+  likesBox   LikesBox @relation(fields: [likesBoxId], references: [id])
+  likesBoxId String
+}
+
+model LikesBox {
+  id        String       @id @default(uuid())
+  type      LikesBoxType
+  likes     Like[]
+  post      Post?        @relation(fields: [postId], references: [id])
+  postId    String?      @unique
+  comment   Comment?     @relation(fields: [commentId], references: [id])
+  commentId String?      @unique
+  reply     Reply?       @relation(fields: [replyId], references: [id])
+  replyId   String?      @unique
+}
+
+model Reply {
+  id        String    @id @default(uuid())
+  author    User      @relation(fields: [authorid], references: [id])
+  authorid  String
+  comment   Comment   @relation(fields: [commentId], references: [id])
+  commentId String
+  likesBox  LikesBox?
+  content   String
+}
+
+model Comment {
+  id       String    @id @default(uuid())
+  author   User      @relation(fields: [authorid], references: [id])
+  authorid String
+  post     Post      @relation(fields: [postId], references: [id])
+  postId   String
+  likesBox LikesBox?
+  replies  Reply[]
+  content  String
+}
+
+model Image {
+  id     String @id @default(uuid())
+  post   Post   @relation(fields: [postId], references: [id])
+  postId String
+  url    String
+}
+
+model Post {
+  id        String    @id @default(uuid())
+  author    User      @relation(fields: [authorid], references: [id])
+  authorid  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  likesBox  LikesBox?
+  comments  Comment[]
+  content   Image[]
+  caption   String
+}
+
+enum LikesBoxType {
+  COMMENT
+  POST
+  REPLY
 }
