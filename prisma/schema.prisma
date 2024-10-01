@@ -67,6 +67,9 @@ model Reply {
   authorid  String
   comment   Comment   @relation(fields: [commentId], references: [id])
   commentId String
+  replies   Reply[]   @relation("reply")
+  reply     Reply     @relation("reply", fields: [replyId], references: [id])
+  replyId   String
   likesBox  LikesBox?
   content   String
 }
