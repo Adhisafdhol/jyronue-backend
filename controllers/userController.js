@@ -83,6 +83,7 @@ exports.user_signup_post = [
         await db.createUser({
           // Convert username into lowercase
           username: username.toLowerCase(),
+          displayName: username,
           password: hashedPassword,
         });
 
