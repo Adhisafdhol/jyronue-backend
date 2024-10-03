@@ -21,15 +21,19 @@ model Session {
 }
 
 model User {
-  id         String    @id @default(uuid())
-  username   String    @unique @db.VarChar(32)
-  password   String
-  followedBy Follows[] @relation("followedBy")
-  following  Follows[] @relation("following")
-  posts      Post[]
-  comments   Comment[]
-  replies    Reply[]
-  liked      Like[]
+  id           String        @id @default(uuid())
+  displayName  String?       @db.VarChar(32)
+  username     String        @unique @db.VarChar(32)
+  password     String
+  bio          String?       @db.VarChar(255)
+  profileImage profileImage?
+  createdAt    DateTime      @default(now())
+  followedBy   Follows[]     @relation("followedBy")
+  following    Follows[]     @relation("following")
+  posts        Post[]
+  comments     Comment[]
+  replies      Reply[]
+  liked        Like[]
 }
 
 model Follows {
@@ -83,6 +87,14 @@ model Comment {
   likesBox LikesBox?
   replies  Reply[]
   content  String
+}
+
+model profileImage {
+  id         String @id @default(uuid())
+  bannerUrl  String
+  pictureUrl String
+  user       User   @relation(fields: [userId], references: [id])
+  userId     String @unique
 }
 
 model Image {
