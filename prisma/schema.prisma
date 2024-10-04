@@ -78,7 +78,7 @@ model Reply {
   reply     Reply     @relation("reply", fields: [replyId], references: [id])
   replyId   String
   likesBox  LikesBox?
-  content   String
+  content   String    @db.VarChar(2048)
 }
 
 model Comment {
@@ -91,7 +91,7 @@ model Comment {
   postId    String
   likesBox  LikesBox?
   replies   Reply[]
-  content   String
+  content   String    @db.VarChar(2048)
 }
 
 model profileImage {
@@ -118,7 +118,7 @@ model Post {
   likesBox  LikesBox?
   comments  Comment[]
   content   Image[]
-  caption   String
+  caption   String    @db.VarChar(2048)
 }
 
 enum LikesBoxType {
