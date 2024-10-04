@@ -48,10 +48,6 @@ app.use("/", indexRouter);
 app.use("/user", userRouter);
 
 app.use((req, res, next) => {
-  res.json({ message: "unhandle error" });
-});
-
-app.use((req, res, next) => {
   const err = new Error("Not found");
   err.status = 404;
 
