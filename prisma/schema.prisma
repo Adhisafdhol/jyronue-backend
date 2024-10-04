@@ -47,6 +47,7 @@ model Follows {
 
 model Like {
   id         String   @id @default(uuid())
+  createdAt  DateTime @default(now())
   author     User     @relation(fields: [authorid], references: [id])
   authorid   String
   likesBox   LikesBox @relation(fields: [likesBoxId], references: [id])
@@ -67,6 +68,8 @@ model LikesBox {
 
 model Reply {
   id        String    @id @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   author    User      @relation(fields: [authorid], references: [id])
   authorid  String
   comment   Comment   @relation(fields: [commentId], references: [id])
@@ -79,14 +82,16 @@ model Reply {
 }
 
 model Comment {
-  id       String    @id @default(uuid())
-  author   User      @relation(fields: [authorid], references: [id])
-  authorid String
-  post     Post      @relation(fields: [postId], references: [id])
-  postId   String
-  likesBox LikesBox?
-  replies  Reply[]
-  content  String
+  id        String    @id @default(uuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  author    User      @relation(fields: [authorid], references: [id])
+  authorid  String
+  post      Post      @relation(fields: [postId], references: [id])
+  postId    String
+  likesBox  LikesBox?
+  replies   Reply[]
+  content   String
 }
 
 model profileImage {
