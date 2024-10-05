@@ -8,7 +8,6 @@ crypto = require("node:crypto");
 path = require("node:path");
 const { decode } = require("base64-arraybuffer");
 const db = require("../db/queries");
-const { error } = require("node:console");
 
 const convertFilesNames = (files) => {
   return files.map((file) => {
