@@ -92,3 +92,24 @@ exports.getPostWithId = async ({ postid }) => {
 
   return post;
 };
+
+exports.createNewComment = async ({ authorId, content, postId }) => {
+  const comment = await prisma.comment.create({
+    data: {
+      author: {
+        connect: { id: authorId },
+      },
+      post: {
+        connect: { id: postId },
+      },
+      likesBox: {
+        create: {
+          type: "COMMENT",
+        },
+      },
+      content: content,
+    },
+  });
+
+  return comment;
+};
