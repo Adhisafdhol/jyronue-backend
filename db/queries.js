@@ -81,15 +81,6 @@ exports.getPostWithId = async ({ postid }) => {
           },
         },
       },
-      comments: {
-        select: {
-          _count: {
-            select: {
-              replies: true,
-            },
-          },
-        },
-      },
       _count: {
         select: {
           comments: true,
