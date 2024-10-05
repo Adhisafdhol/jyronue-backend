@@ -40,7 +40,6 @@ exports.deleteUserByUsername = async ({ username }) => {
 };
 
 exports.createNewPost = async ({ authorId, content, caption }) => {
-  console.log(content);
   const createPost = await prisma.post.create({
     data: {
       author: {
@@ -59,4 +58,46 @@ exports.createNewPost = async ({ authorId, content, caption }) => {
   });
 
   return createPost;
+};
+
+exports.getPostWithId = async ({ postid }) => {
+  const post = await prisma.post.findFirst({
+    where: {
+      id: postid,
+    },
+    include: {
+      content: true,
+      author: {
+        select: {
+          displayName: true,
+          username: true,
+        },
+      },
+      likesBox: {
+        select: {
+          id: true,
+          _count: {
+            select: { likes: true },
+          },
+        },
+      },
+      comments: {
+        select: {
+          _count: {
+            select: {
+              replies: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          comments: true,
+          replies: true,
+        },
+      },
+    },
+  });
+
+  return post;
 };
