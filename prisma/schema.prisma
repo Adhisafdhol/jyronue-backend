@@ -33,6 +33,7 @@ model User {
   posts        Post[]
   comments     Comment[]
   replies      Reply[]
+  repliesBy    Reply[]       @relation("replyTo")
   liked        Like[]
 }
 
@@ -70,6 +71,8 @@ model Reply {
   id        String    @id @default(uuid())
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  replyTo   User      @relation("replyTo", fields: [replyToId], references: [id])
+  replyToId String
   author    User      @relation(fields: [authorid], references: [id])
   authorid  String
   comment   Comment   @relation(fields: [commentId], references: [id])
@@ -79,6 +82,8 @@ model Reply {
   replyId   String
   likesBox  LikesBox?
   content   String    @db.VarChar(2048)
+  post      Post?     @relation(fields: [postId], references: [id])
+  postId    String?
 }
 
 model Comment {
@@ -118,6 +123,7 @@ model Post {
   likesBox  LikesBox?
   comments  Comment[]
   content   Image[]
+  replies   Reply[]
   caption   String    @db.VarChar(2048)
 }
 
