@@ -17,6 +17,7 @@ const cors = require("cors");
 
 const indexRouter = require("./routes/index");
 const userRouter = require("./routes/user");
+const postRouter = require("./routes/post");
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use(cors({ credentials: true, origin: process.env.ORIGIN }));
 
 app.use("/", indexRouter);
 app.use("/user", userRouter);
+app.use("/post", postRouter);
 
 app.use((req, res, next) => {
   const err = new Error("Not found");
