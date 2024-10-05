@@ -8,6 +8,7 @@ crypto = require("node:crypto");
 path = require("node:path");
 const { decode } = require("base64-arraybuffer");
 const db = require("../db/queries");
+const { error } = require("node:console");
 
 const convertFilesNames = (files) => {
   return files.map((file) => {
@@ -53,6 +54,24 @@ const postValidator = {
       return true;
     }),
 };
+
+exports.post_get = asyncHandler(async (req, res, next) => {
+  const postid = req.params.postid;
+
+  const post = await db.getPostWithId({ postid });
+
+  if (post === null) {
+    return res.json({
+      message: "Failed to retrieve post",
+      error: "Cannot find a post with that id",
+    });
+  }
+
+  res.json({
+    message: "Successfully retrieved post",
+    post,
+  });
+});
 
 exports.post_post = [
   (req, res, next) => {
