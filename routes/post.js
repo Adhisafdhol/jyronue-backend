@@ -9,4 +9,6 @@ router.post("/", postController.post_post);
 
 router.post("/:postid/comment", commentController.comment_post);
 
+router.get("/:postid/comments", commentController.comments_get);
+
 module.exports = router;
