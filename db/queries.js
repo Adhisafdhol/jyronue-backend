@@ -113,3 +113,54 @@ exports.createNewComment = async ({ authorId, content, postId }) => {
 
   return comment;
 };
+
+exports.getCommentsWithoutCursor = async ({ postId, limit }) => {
+  const topComment = await prisma.comment.findMany({
+    where: {
+      postId: postId,
+    },
+    orderBy: [
+      {
+        createdAt: "desc",
+      },
+    ],
+    take: limit,
+  });
+
+  return topComment;
+};
+
+exports.getCommentsWithCursor = async ({ postId, cursor, limit }) => {
+  const { createdAt, id } = cursor;
+
+  console.log(cursor);
+
+  const comments = await prisma.comment.findMany({
+    where: {
+      OR: [
+        {
+          AND: {
+            id: {
+              gt: id,
+            },
+            createdAt: createdAt,
+          },
+        },
+        {
+          createdAt: {
+            lt: createdAt,
+          },
+        },
+      ],
+    },
+    orderBy: [
+      {
+        createdAt: "desc",
+      },
+      { id: "asc" },
+    ],
+    take: limit,
+  });
+
+  return comments;
+};
