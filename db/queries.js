@@ -119,6 +119,29 @@ exports.getCommentsWithoutCursor = async ({ postId, limit }) => {
     where: {
       postId: postId,
     },
+    include: {
+      author: {
+        select: {
+          displayName: true,
+          username: true,
+        },
+      },
+      likesBox: {
+        select: {
+          id: true,
+          _count: {
+            select: {
+              likes: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          replies: true,
+        },
+      },
+    },
     orderBy: [
       {
         createdAt: "desc",
@@ -152,6 +175,29 @@ exports.getCommentsWithCursor = async ({ postId, cursor, limit }) => {
           },
         },
       ],
+    },
+    include: {
+      author: {
+        select: {
+          displayName: true,
+          username: true,
+        },
+      },
+      likesBox: {
+        select: {
+          id: true,
+          _count: {
+            select: {
+              likes: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          replies: true,
+        },
+      },
     },
     orderBy: [
       {
