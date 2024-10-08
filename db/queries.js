@@ -7,6 +7,9 @@ exports.createUser = async ({ displayName, username, password }) => {
       displayName: displayName,
       username: username,
       password: password,
+      profileImage: {
+        create: {},
+      },
     },
   });
 
