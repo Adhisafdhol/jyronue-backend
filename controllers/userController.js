@@ -1,8 +1,15 @@
 const asyncHandler = require("express-async-handler");
-const { body, validationResult } = require("express-validator");
+const { check, body, query, validationResult } = require("express-validator");
 const bcrypt = require("bcrypt");
 const passport = require("passport");
 const db = require("../db/queries");
+const multer = require("multer");
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+const supabaseDb = require("../db/supabaseQueries");
+const { convertFileName } = require("../utils/utils");
+
+const imageMimetype = ["image/jpeg", "image/png", "image/x-png"];
 
 // Create a user
 // Leading and trailing white-space-characters will be trimmed
@@ -50,6 +57,56 @@ const userValidator = {
     .trim()
     .isLength({ min: 8 })
     .withMessage("Password must contain at least 8 characters")
+    .escape(),
+  profileImage: check("image")
+    .custom((value, { req }) => {
+      if (!req.file) {
+        throw new Error("Please attach an image to update profile");
+      }
+
+      // Indicates the success of this synchronous custom validator
+      return true;
+    })
+    .bail()
+    .custom((value, { req }) => {
+      const isMimetypeValid = imageMimetype.includes(req.file.mimetype);
+      console.log(isMimetypeValid);
+
+      if (!isMimetypeValid) {
+        throw new Error("Please only submit jpeg or png file");
+      }
+
+      return true;
+    }),
+  profileImage: check("image")
+    .custom((value, { req }) => {
+      if (!req.file) {
+        throw new Error("Please attach an image to update profile");
+      }
+
+      // Indicates the success of this synchronous custom validator
+      return true;
+    })
+    .bail()
+    .custom((value, { req }) => {
+      const isMimetypeValid = imageMimetype.includes(req.file.mimetype);
+      console.log(isMimetypeValid);
+
+      if (!isMimetypeValid) {
+        throw new Error("Please only submit jpeg or png file");
+      }
+
+      return true;
+    }),
+  profileImageType: query("type")
+    .trim()
+    .custom((value, { req }) => {
+      const regex = new RegExp(/^(banner|profile)$/, "i");
+      if (!regex.test(value)) {
+        throw new Error("type should be either banner or profile");
+      }
+      return value;
+    })
     .escape(),
 };
 
@@ -144,5 +201,62 @@ exports.user_login_post = [
     successRedirect: "/user/login",
     failureRedirect: "/user/login",
     failureMessage: true,
+  }),
+];
+
+exports.user_profile_post = [
+  (req, res, next) => {
+    if (req.user) {
+      return next();
+    }
+
+    return res.status(401).json({
+      message: "you can't update profile picture when you're not logged in",
+    });
+  },
+  upload.single("image"),
+  userValidator.profileImageType,
+  userValidator.profileImage,
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const errorsList = errors.array().map((err) => {
+        return { field: err.path, value: err.value, msg: err.msg };
+      });
+
+      return res.status(422).json({
+        message: "Failed to update profile picture",
+        errors: errorsList,
+      });
+    }
+
+    const user = req.user;
+    const file = convertFileName(req.file);
+    await supabaseDb.uploadFile({ file, from: "profiles", user });
+
+    const from =
+      req.query.type.toLowerCase() === "profile" ? "profiles" : "banners";
+    const url = supabaseDb.getPublicUrl({ file, from }).publicUrl;
+
+    const type = req.query.type;
+
+    let profileImage;
+    if (type === "profile") {
+      profileImage = await db.updateProfilePicture({
+        userId: user.id,
+        url,
+      });
+    } else {
+      profileImage = await db.updateProfileBanner({
+        userId: user.id,
+        url,
+      });
+    }
+
+    res.json({
+      message: `${type} picture successfully updated`,
+      profileImage,
+    });
   }),
 ];
