@@ -213,3 +213,25 @@ exports.getCommentsWithCursor = async ({ postId, cursor, limit }) => {
 
   return comments;
 };
+
+exports.updateProfileBanner = async ({ userId, url }) => {
+  const profileImage = await prisma.profileImage.update({
+    where: { userId: userId },
+    data: {
+      bannerUrl: url,
+    },
+  });
+
+  return profileImage;
+};
+
+exports.updateProfilePicture = async ({ userId, url }) => {
+  const profileImage = await prisma.profileImage.update({
+    where: { userId: userId },
+    data: {
+      pictureUrl: url,
+    },
+  });
+
+  return profileImage;
+};
