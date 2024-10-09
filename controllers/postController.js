@@ -1,22 +1,11 @@
 const asyncHandler = require("express-async-handler");
 const { check, body, validationResult } = require("express-validator");
-const supabase = require("../config/supabaseConfig");
 const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
-crypto = require("node:crypto");
-path = require("node:path");
-const { decode } = require("base64-arraybuffer");
 const db = require("../db/queries");
-
-const convertFilesNames = (files) => {
-  return files.map((file) => {
-    const uuid = crypto.randomUUID();
-    const ext = path.extname(file.originalname);
-    const newName = "image-" + uuid + ext;
-    return { ...file, originalname: newName };
-  });
-};
+const supabaseDb = require("../db/supabaseQueries");
+const { convertFileName } = require("../utils/utils");
 
 const imageMimetype = ["image/jpeg", "image/png", "image/x-png"];
 
@@ -42,9 +31,6 @@ const postValidator = {
       const isMimetypeValid = req.files.every((file) =>
         imageMimetype.includes(file.mimetype)
       );
-
-      req.files.every((file) => console.log(file.mimetype));
-      console.log(isMimetypeValid);
 
       if (!isMimetypeValid) {
         throw new Error("Please only submit jpeg or png file");
@@ -99,51 +85,15 @@ exports.post_post = [
       });
     }
 
-    // Upload file using standard upload
-    async function uploadFile(file) {
-      const fileBase64 = decode(file.buffer.toString("base64"));
-      const folder = req.user.id;
-
-      const { data, error } = await supabase.storage
-        .from("images")
-        .upload(`${folder}/${file.originalname}`, fileBase64, {
-          contentType: file.mimetype,
-        });
-
-      if (error) {
-        // Handle error
-        next(error);
-      } else {
-        // Handle success
-        return data;
-      }
-    }
-
-    // Get file url
-    function getFileUrl(file) {
-      const { data, error } = supabase.storage
-        .from("images")
-        .getPublicUrl(file.originalname);
-
-      if (error) {
-        // Handle error
-        next(error);
-      } else {
-        // Handle success
-        return data;
-      }
-    }
-
-    const files = convertFilesNames(req.files);
+    const user = req.user;
+    const files = req.files.map((file) => convertFileName(file));
     files.forEach(async (file) => {
-      await uploadFile(file);
+      await supabaseDb.uploadFile({ user, from: "images", file });
     });
 
     const urls = files.map((file) => {
-      return getFileUrl(file);
+      return supabaseDb.getPublicUrl({ file, from: "images" });
     });
-
-    console.log({ files, urls });
 
     const authorId = req.user.id;
     const content = urls.map((url) => {
@@ -152,12 +102,6 @@ exports.post_post = [
       };
     });
     const caption = req.body.caption;
-
-    console.log({
-      authorId,
-      content,
-      caption,
-    });
 
     const post = await db.createNewPost({ authorId, content, caption });
 
