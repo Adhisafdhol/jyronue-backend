@@ -74,6 +74,11 @@ exports.getPostWithId = async ({ postid }) => {
         select: {
           displayName: true,
           username: true,
+          profileImage: {
+            select: {
+              pictureUrl: true,
+            },
+          },
         },
       },
       likesBox: {
