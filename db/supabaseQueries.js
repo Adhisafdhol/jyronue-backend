@@ -31,3 +31,15 @@ exports.getPublicUrl = ({ user, file, from }) => {
     return data;
   }
 };
+
+exports.deleteFile = async ({ from, folder, filename }) => {
+  const { data, error } = await supabase.storage
+    .from(from)
+    .remove(`${folder}/${filename}`);
+
+  if (error) {
+    throw new Error("Failed to delete file");
+  } else {
+    return data;
+  }
+};
