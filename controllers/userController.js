@@ -8,6 +8,7 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const supabaseDb = require("../db/supabaseQueries");
 const { convertFileName } = require("../utils/utils");
+const sharp = require("sharp");
 
 const imageMimetype = ["image/jpeg", "image/png", "image/x-png"];
 
@@ -231,6 +232,15 @@ exports.user_profile_post = [
 
     const user = req.user;
     const file = convertFileName(req.file);
+    const resizedBuffer = await sharp(file.buffer)
+      .resize({
+        width: 128,
+        height: 128,
+        fit: "cover",
+      })
+      .toBuffer();
+    file.buffer = resizedBuffer;
+
     await supabaseDb.uploadFile({ file, from: "profiles", user });
 
     const from =
