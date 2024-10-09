@@ -219,6 +219,14 @@ exports.getCommentsWithCursor = async ({ postId, cursor, limit }) => {
   return comments;
 };
 
+exports.getProfileImageWithUserId = async ({ userId }) => {
+  const profileImage = await prisma.profileImage.findFirst({
+    where: { userId: userId },
+  });
+
+  return profileImage;
+};
+
 exports.updateProfileBanner = async ({ userId, url }) => {
   const profileImage = await prisma.profileImage.update({
     where: { userId: userId },
