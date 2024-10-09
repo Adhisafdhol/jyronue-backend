@@ -19,10 +19,11 @@ exports.uploadFile = async ({ user, file, from }) => {
   }
 };
 
-exports.getPublicUrl = ({ file, from }) => {
+exports.getPublicUrl = ({ user, file, from }) => {
+  const folder = user.id;
   const { data, error } = supabase.storage
     .from(from)
-    .getPublicUrl(file.originalname);
+    .getPublicUrl(`${folder}/${file.originalname}`);
 
   if (error) {
     throw new Error("Failed to get public url");
