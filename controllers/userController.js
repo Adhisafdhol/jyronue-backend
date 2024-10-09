@@ -231,31 +231,17 @@ exports.user_profile_post = [
     }
 
     const user = req.user;
-    const file = convertFileName(req.file);
-    const resizedBuffer = await sharp(file.buffer)
-      .resize({
-        width: 128,
-        height: 128,
-        fit: "cover",
-      })
-      .toBuffer();
-    file.buffer = resizedBuffer;
-
-    await supabaseDb.uploadFile({ file, from: "profiles", user });
-
-    const from =
-      req.query.type.toLowerCase() === "profile" ? "profiles" : "banners";
-    const url = supabaseDb.getPublicUrl({ user, file, from }).publicUrl;
-
     const type = req.query.type;
+    const from = type.toLowerCase() === "profile" ? "profiles" : "banners";
+
     const previousProfileImage = await db.getProfileImageWithUserId({
       userId: user.id,
     });
 
+    // Delete previous profile image url file from supabase
     if (previousProfileImage !== null) {
-      const from = type === "profile" ? "profiles" : "banners";
       const url =
-        type === "profile"
+        type.toLowerCase() === "profile"
           ? previousProfileImage.pictureUrl
           : previousProfileImage.bannerUrl;
 
@@ -270,6 +256,21 @@ exports.user_profile_post = [
         });
       }
     }
+
+    const file = convertFileName(req.file);
+    if (type.toLowerCase() === "profile") {
+      const resizedBuffer = await sharp(file.buffer)
+        .resize({
+          width: 128,
+          height: 128,
+          fit: "cover",
+        })
+        .toBuffer();
+      file.buffer = resizedBuffer;
+    }
+
+    await supabaseDb.uploadFile({ file, from: "profiles", user });
+    const url = supabaseDb.getPublicUrl({ user, file, from }).publicUrl;
 
     let profileImage;
     if (type === "profile") {
