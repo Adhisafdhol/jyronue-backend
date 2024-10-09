@@ -237,7 +237,7 @@ exports.user_profile_post = [
 
     const from =
       req.query.type.toLowerCase() === "profile" ? "profiles" : "banners";
-    const url = supabaseDb.getPublicUrl({ file, from }).publicUrl;
+    const url = supabaseDb.getPublicUrl({ user, file, from }).publicUrl;
 
     const type = req.query.type;
 

@@ -92,7 +92,7 @@ exports.post_post = [
     });
 
     const urls = files.map((file) => {
-      return supabaseDb.getPublicUrl({ file, from: "images" });
+      return supabaseDb.getPublicUrl({ user, file, from: "images" });
     });
 
     const authorId = req.user.id;
