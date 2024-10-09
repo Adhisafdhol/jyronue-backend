@@ -1,5 +1,5 @@
-crypto = require("node:crypto");
-path = require("node:path");
+const crypto = require("node:crypto");
+const path = require("node:path");
 
 exports.convertFileName = (file) => {
   const uuid = crypto.randomUUID();
