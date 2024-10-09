@@ -70,7 +70,6 @@ const userValidator = {
     .bail()
     .custom((value, { req }) => {
       const isMimetypeValid = imageMimetype.includes(req.file.mimetype);
-      console.log(isMimetypeValid);
 
       if (!isMimetypeValid) {
         throw new Error("Please only submit jpeg or png file");
@@ -90,7 +89,6 @@ const userValidator = {
     .bail()
     .custom((value, { req }) => {
       const isMimetypeValid = imageMimetype.includes(req.file.mimetype);
-      console.log(isMimetypeValid);
 
       if (!isMimetypeValid) {
         throw new Error("Please only submit jpeg or png file");
@@ -240,6 +238,28 @@ exports.user_profile_post = [
     const url = supabaseDb.getPublicUrl({ user, file, from }).publicUrl;
 
     const type = req.query.type;
+    const previousProfileImage = await db.getProfileImageWithUserId({
+      userId: user.id,
+    });
+
+    if (previousProfileImage !== null) {
+      const from = type === "profile" ? "profiles" : "banners";
+      const url =
+        type === "profile"
+          ? previousProfileImage.pictureUrl
+          : previousProfileImage.bannerUrl;
+
+      if (url !== null) {
+        const urlSplit = url.split("/");
+        const filename = urlSplit[urlSplit.length - 1];
+
+        await supabaseDb.deleteFile({
+          folder: user.id,
+          from,
+          filename,
+        });
+      }
+    }
 
     let profileImage;
     if (type === "profile") {
