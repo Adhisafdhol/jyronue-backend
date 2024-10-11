@@ -40,7 +40,7 @@ exports.comments_get = [
     const id = cursor ? cursor.split("_")[1] : null;
     const limit = req.query.limit ? Number(req.query.limit) : defaultLimit;
 
-    const postId = req.params.postId;
+    const postId = req.params.postid;
 
     console.log({ cursor, limit });
 
