@@ -132,6 +132,11 @@ exports.getCommentsWithoutCursor = async ({ postId, limit }) => {
         select: {
           displayName: true,
           username: true,
+          profileImage: {
+            select: {
+              pictureUrl: true,
+            },
+          },
         },
       },
       likesBox: {
@@ -168,6 +173,7 @@ exports.getCommentsWithCursor = async ({ postId, cursor, limit }) => {
 
   const comments = await prisma.comment.findMany({
     where: {
+      postId: postId,
       OR: [
         {
           AND: {
@@ -189,6 +195,11 @@ exports.getCommentsWithCursor = async ({ postId, cursor, limit }) => {
         select: {
           displayName: true,
           username: true,
+          profileImage: {
+            select: {
+              pictureUrl: true,
+            },
+          },
         },
       },
       likesBox: {
