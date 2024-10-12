@@ -42,12 +42,18 @@ exports.deleteUserByUsername = async ({ username }) => {
   return username;
 };
 
-exports.createNewPost = async ({ authorId, content, caption }) => {
+exports.createNewPost = async ({
+  authorId,
+  thumbnailUrl,
+  content,
+  caption,
+}) => {
   const createPost = await prisma.post.create({
     data: {
       author: {
         connect: { id: authorId },
       },
+      thumbnail: thumbnailUrl,
       likesBox: {
         create: {
           type: "POST",
