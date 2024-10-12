@@ -6,6 +6,7 @@ const upload = multer({ storage: storage });
 const db = require("../db/queries");
 const supabaseDb = require("../db/supabaseQueries");
 const { convertFileName } = require("../utils/utils");
+const sharp = require("sharp");
 
 const imageMimetype = ["image/jpeg", "image/png", "image/x-png"];
 
@@ -95,6 +96,27 @@ exports.post_post = [
       return supabaseDb.getPublicUrl({ user, file, from: "images" });
     });
 
+    const thumbnail = files[0];
+    const resizedThumbnail = await sharp(thumbnail.buffer)
+      .resize({
+        width: 320,
+        height: 320,
+        fit: "cover",
+      })
+      .toBuffer();
+    thumbnail.buffer = resizedThumbnail;
+    await supabaseDb.uploadFile({
+      user,
+      from: "thumbnails",
+      file: thumbnail,
+    });
+
+    const thumbnailUrl = supabaseDb.getPublicUrl({
+      user,
+      file: thumbnail,
+      from: "thumbnails",
+    });
+
     const authorId = req.user.id;
     const content = urls.map((url) => {
       return {
@@ -103,7 +125,12 @@ exports.post_post = [
     });
     const caption = req.body.caption;
 
-    const post = await db.createNewPost({ authorId, content, caption });
+    const post = await db.createNewPost({
+      authorId,
+      thumbnailUrl: thumbnailUrl.publicUrl,
+      content,
+      caption,
+    });
 
     res.json({
       message: "Successfully created a post",
