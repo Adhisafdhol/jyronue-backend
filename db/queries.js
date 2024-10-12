@@ -39,7 +39,7 @@ exports.deleteUserByUsername = async ({ username }) => {
     },
   });
 
-  return username;
+  return user;
 };
 
 exports.createNewPost = async ({
