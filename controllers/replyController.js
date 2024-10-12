@@ -36,6 +36,32 @@ const replyValidator = {
     }),
 };
 
+exports.reply_get = asyncHandler(async (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const errorsList = errors.array().map((err) => {
+      return { field: err.path, value: err.value, msg: err.msg };
+    });
+
+    return res.status(422).json({
+      message: "Failed to fetch replies",
+      errors: errorsList,
+    });
+  }
+
+  const commentId = req.params.commentid;
+
+  let replies = await db.getCommentReplies({
+    commentId,
+  });
+
+  res.json({
+    message: "Successfuly retrieved comment replies",
+    replies,
+  });
+});
+
 exports.reply_post = [
   (req, res, next) => {
     if (req.user) {
