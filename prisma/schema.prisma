@@ -78,8 +78,8 @@ model Reply {
   comment   Comment   @relation(fields: [commentId], references: [id])
   commentId String
   replies   Reply[]   @relation("reply")
-  reply     Reply     @relation("reply", fields: [replyId], references: [id])
-  replyId   String
+  reply     Reply?    @relation("reply", fields: [replyId], references: [id])
+  replyId   String?
   likesBox  LikesBox?
   content   String    @db.VarChar(2048)
   post      Post?     @relation(fields: [postId], references: [id])
