@@ -14,7 +14,9 @@ async function main() {
 
       await tx.post.update({
         where: { id: post.id },
-        thumbnail: thumbnail.url,
+        data: {
+          thumbnail: thumbnail ? thumbnail.url : "unknown",
+        },
       });
     }
   });
