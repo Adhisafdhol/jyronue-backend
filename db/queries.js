@@ -265,3 +265,77 @@ exports.updateProfilePicture = async ({ userId, url }) => {
 
   return profileImage;
 };
+
+exports.createNewReplyWithNoParent = async ({
+  authorId,
+  postId,
+  commentId,
+  replyToId,
+  content,
+}) => {
+  const reply = await prisma.reply.create({
+    data: {
+      author: {
+        connect: { id: authorId },
+      },
+      replyTo: {
+        connect: { id: replyToId },
+      },
+      comment: {
+        connect: {
+          id: commentId,
+        },
+      },
+      post: {
+        connect: { id: postId },
+      },
+      likesBox: {
+        create: {
+          type: "REPLY",
+        },
+      },
+      content: content,
+    },
+  });
+
+  return reply;
+};
+
+exports.createNewReplyWithParent = async ({
+  authorId,
+  postId,
+  commentId,
+  replyToId,
+  parentId,
+  content,
+}) => {
+  const reply = await prisma.reply.create({
+    data: {
+      author: {
+        connect: { id: authorId },
+      },
+      parent: {
+        connect: { id: parentId },
+      },
+      replyTo: {
+        connect: { id: replyToId },
+      },
+      comment: {
+        connect: {
+          id: commentId,
+        },
+      },
+      post: {
+        connect: { id: postId },
+      },
+      likesBox: {
+        create: {
+          type: "REPLY",
+        },
+      },
+      content: content,
+    },
+  });
+
+  return reply;
+};
