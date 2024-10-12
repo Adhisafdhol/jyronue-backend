@@ -339,3 +339,41 @@ exports.createNewReplyWithParent = async ({
 
   return reply;
 };
+
+exports.getCommentReplies = async ({ commentId }) => {
+  const replies = await prisma.reply.findMany({
+    where: {
+      commentId: commentId,
+    },
+    include: {
+      author: {
+        select: {
+          displayName: true,
+          username: true,
+          profileImage: {
+            select: {
+              pictureUrl: true,
+            },
+          },
+        },
+      },
+      likesBox: {
+        select: {
+          id: true,
+          _count: {
+            select: {
+              likes: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: [
+      {
+        createdAt: "asc",
+      },
+    ],
+  });
+
+  return replies;
+};
