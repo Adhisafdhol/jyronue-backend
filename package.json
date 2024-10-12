@@ -7,7 +7,8 @@
     "test-watch": "NODE_ENV=test && jest --watchAll",
     "start": "node ./bin/www",
     "devstart": "node --watch ./bin/www",
-    "serverstart": "DEBUG=jyronue-backend:* & npm run devstart"
+    "serverstart": "DEBUG=jyronue-backend:* & npm run devstart",
+    "data-migration:add-thumbnail-column": "node ./prisma/migrations/20241012015816_add_thumbnail_default/data-migration.js"
   },
   "dependencies": {
     "@prisma/client": "^5.19.1",
