@@ -8,7 +8,7 @@ const commentValidator = {
     .isLength({ min: 1 })
     .bail()
     .isLength({ max: 2048 })
-    .withMessage("Caption cannot exceed 2048 characters")
+    .withMessage("Comment cannot exceed 2048 characters")
     .escape(),
   limit: query("limit", "Limit must be an integer")
     .trim()
