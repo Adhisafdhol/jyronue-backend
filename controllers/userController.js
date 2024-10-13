@@ -213,6 +213,30 @@ exports.user_login_post = [
   }),
 ];
 
+exports.user_logout_get = [
+  (req, res, next) => {
+    if (req.user) {
+      return next();
+    }
+
+    res.status(204).json({
+      message: "No user to log out",
+    });
+  },
+  (req, res, next) => {
+    const user = req.user;
+
+    req.logout((err) => {
+      if (err) {
+        return next(err);
+      }
+      res.json({
+        message: `Successfully logged out as ${user.username}`,
+      });
+    });
+  },
+];
+
 exports.user_profile_post = [
   (req, res, next) => {
     if (req.user) {
