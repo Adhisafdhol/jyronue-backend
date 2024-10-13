@@ -169,6 +169,9 @@ exports.user_login_get = (req, res, next) => {
   if (req.user) {
     return res.json({
       message: `Successfully logged in as ${req.user.username}`,
+      user: {
+        id: req.user.id,
+      },
     });
   }
 
