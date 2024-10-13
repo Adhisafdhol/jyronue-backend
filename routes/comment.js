@@ -3,6 +3,6 @@ const router = express.Router();
 
 const replyController = require("../controllers/replyController");
 
-router.post("/:commentid/replies", replyController.reply_get);
+router.get("/:commentid/replies", replyController.reply_get);
 
 module.exports = router;
