@@ -178,6 +178,13 @@ exports.user_login_get = (req, res, next) => {
 };
 
 exports.user_login_post = [
+  (req, res, next) => {
+    if (req.user) {
+      return res.redirect("/user/login");
+    }
+
+    next();
+  },
   userValidator.username_login,
   userValidator.password,
   (req, res, next) => {
