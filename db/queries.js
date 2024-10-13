@@ -357,6 +357,11 @@ exports.getCommentReplies = async ({ commentId }) => {
           },
         },
       },
+      replyTo: {
+        select: {
+          username: true,
+        },
+      },
       likesBox: {
         select: {
           id: true,
