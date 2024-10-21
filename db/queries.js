@@ -389,8 +389,7 @@ exports.getCommentReplies = async ({ commentId }) => {
 exports.findUserLikeOnLikesBox = async ({ likesBoxId, authorId }) => {
   const like = await prisma.like.findFirst({
     where: {
-      likesBoxId: likesBoxId,
-      authorId: authorId,
+      AND: [{ likesBoxId: likesBoxId }, { authorId: authorId }],
     },
   });
 
