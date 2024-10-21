@@ -49,8 +49,8 @@ model Follows {
 model Like {
   id         String   @id @default(uuid())
   createdAt  DateTime @default(now())
-  author     User     @relation(fields: [authorid], references: [id])
-  authorid   String
+  author     User     @relation(fields: [authorId], references: [id])
+  authorId   String
   likesBox   LikesBox @relation(fields: [likesBoxId], references: [id])
   likesBoxId String
 }
