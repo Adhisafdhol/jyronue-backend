@@ -176,7 +176,8 @@ exports.user_login_get = (req, res, next) => {
   }
 
   res.json({
-    message: "Cannot access this page directly",
+    message: "failed to log in",
+    error: "You are not logged in",
   });
 };
 
