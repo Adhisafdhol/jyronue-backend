@@ -183,12 +183,14 @@ exports.getCommentsWithCursor = async ({ postId, cursor, limit }) => {
       postId: postId,
       OR: [
         {
-          AND: {
-            id: {
-              gt: id,
+          AND: [
+            {
+              id: {
+                gt: id,
+              },
             },
-            createdAt: createdAt,
-          },
+            { createdAt: createdAt },
+          ],
         },
         {
           createdAt: {
