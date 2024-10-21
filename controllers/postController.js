@@ -53,9 +53,25 @@ exports.post_get = asyncHandler(async (req, res, next) => {
     });
   }
 
+  let userLikeStatus = false;
+
+  if (req.user) {
+    const user = req.user;
+
+    const userLike = await db.findUserLikeOnLikesBox({
+      authorId: user.id,
+      likesBoxId: post.likesBox.id,
+    });
+
+    if (userLike !== null) {
+      userLikeStatus = true;
+    }
+  }
+
   res.json({
     message: "Successfully retrieved post",
     post,
+    userLikeStatus,
   });
 });
 
