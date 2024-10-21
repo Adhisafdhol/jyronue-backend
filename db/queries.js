@@ -90,6 +90,7 @@ exports.getPostWithId = async ({ postid }) => {
       likesBox: {
         select: {
           id: true,
+          type: true,
           _count: {
             select: { likes: true },
           },
