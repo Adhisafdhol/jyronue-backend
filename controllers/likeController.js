@@ -81,3 +81,55 @@ exports.like_post = [
     });
   }),
 ];
+
+exports.unlike_post = [
+  (req, res, next) => {
+    if (req.user) {
+      return next();
+    }
+
+    return res.status(401).json({
+      message: "you can't unlike anything when you are not logged in",
+    });
+  },
+  likeValidator.type,
+  likeValidator.likesBoxId,
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const errorsList = errors.array().map((err) => {
+        return { field: err.path, value: err.value, msg: err.msg };
+      });
+
+      return res.status(422).json({
+        message: `Failed to unlike ${
+          req.body.type.toLowerCase() || "something"
+        }`,
+        errors: errorsList,
+      });
+    }
+
+    const user = req.user;
+    const likesBoxId = req.body.likesboxid;
+    const type = req.body.type.toLowerCase();
+
+    const previousLike = await db.findUserLikeOnLikesBox({
+      authorId: user.id,
+      likesBoxId,
+    });
+
+    if (!previousLike) {
+      return res.status(208).json({
+        message: `You haven't liked this ${type}`,
+      });
+    }
+
+    const like = await db.deleteLike({ id: previousLike.id });
+
+    res.json({
+      message: `Successfully unliked the ${type}`,
+      like,
+    });
+  }),
+];

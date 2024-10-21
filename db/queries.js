@@ -388,7 +388,7 @@ exports.findUserLikeOnLikesBox = async ({ likesBoxId, authorId }) => {
   const like = await prisma.like.findFirst({
     where: {
       likesBoxId: likesBoxId,
-      authorid: authorId,
+      authorId: authorId,
     },
   });
 
@@ -404,6 +404,16 @@ exports.createUserLikeOnLikesBox = async ({ likesBoxId, authorId }) => {
       likesBox: {
         connect: { id: likesBoxId },
       },
+    },
+  });
+
+  return like;
+};
+
+exports.deleteLike = async ({ id }) => {
+  const like = await prisma.like.delete({
+    where: {
+      id: id,
     },
   });
 
