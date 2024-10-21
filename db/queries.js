@@ -383,3 +383,29 @@ exports.getCommentReplies = async ({ commentId }) => {
 
   return replies;
 };
+
+exports.findUserLikeOnLikesBox = async ({ likesBoxId, authorId }) => {
+  const like = await prisma.like.findFirst({
+    where: {
+      likesBoxId: likesBoxId,
+      authorid: authorId,
+    },
+  });
+
+  return like;
+};
+
+exports.createUserLikeOnLikesBox = async ({ likesBoxId, authorId }) => {
+  const like = await prisma.like.create({
+    data: {
+      author: {
+        connect: { id: authorId },
+      },
+      likesBox: {
+        connect: { id: likesBoxId },
+      },
+    },
+  });
+
+  return like;
+};

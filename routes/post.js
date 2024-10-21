@@ -5,6 +5,9 @@ const postController = require("../controllers/postController");
 const commentController = require("../controllers/commentController");
 const replyController = require("../controllers/replyController");
 
+const likeRouter = require("./like");
+
+router.use("/:postid", likeRouter);
 router.get("/:postid", postController.post_get);
 router.post("/", postController.post_post);
 
