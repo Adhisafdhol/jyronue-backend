@@ -420,3 +420,20 @@ exports.deleteLike = async ({ id }) => {
 
   return like;
 };
+
+exports.getLikesBoxWithId = async ({ id }) => {
+  const likesBox = await prisma.likesBox.findFirst({
+    where: {
+      id: id,
+    },
+    select: {
+      id: true,
+      type: true,
+      _count: {
+        select: { likes: true },
+      },
+    },
+  });
+
+  return likesBox;
+};

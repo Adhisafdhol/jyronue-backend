@@ -133,3 +133,51 @@ exports.unlike_post = [
     });
   }),
 ];
+
+exports.likebox_get = asyncHandler(async (req, res, next) => {
+  const id = req.params.likesboxid;
+
+  const likesBox = await db.getLikesBoxWithId({ id });
+
+  if (likesBox === null) {
+    return res.status(404).json({
+      message: "Cannot find likes box with thar id",
+    });
+  }
+
+  res.json({
+    message: "Successfully retrieved likes box",
+    likesBox,
+  });
+});
+
+exports.likebox_user_like_status_get = [
+  (req, res, next) => {
+    if (req.user) {
+      return next();
+    }
+
+    return res.status(401).json({
+      message: "you need to log to check your like status",
+    });
+  },
+  asyncHandler(async (req, res, next) => {
+    const authorId = req.user.id;
+    const likesBoxId = req.params.likesboxid;
+    const type = req.query.type ? req.query.type : "thing";
+
+    const like = await db.findUserLikeOnLikesBox({ likesBoxId, authorId });
+
+    if (like === null) {
+      return {
+        message: `You Haven't like this ${type} yet`,
+        userLikeStatus: false,
+      };
+    }
+
+    res.json({
+      message: `You have liked this ${type}`,
+      userLikeStatus: true,
+    });
+  }),
+];
