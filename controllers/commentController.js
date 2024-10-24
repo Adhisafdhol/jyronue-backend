@@ -125,7 +125,7 @@ exports.comment_post = [
 
     res.json({
       message: "Successfully created a comment",
-      comment: comment,
+      comment: { ...comment, userLikeStatus: false },
     });
   }),
 ];
