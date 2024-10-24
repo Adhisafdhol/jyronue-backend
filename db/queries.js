@@ -124,6 +124,34 @@ exports.createNewComment = async ({ authorId, content, postId }) => {
       },
       content: content,
     },
+    include: {
+      author: {
+        select: {
+          displayName: true,
+          username: true,
+          profileImage: {
+            select: {
+              pictureUrl: true,
+            },
+          },
+        },
+      },
+      likesBox: {
+        select: {
+          id: true,
+          _count: {
+            select: {
+              likes: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          replies: true,
+        },
+      },
+    },
   });
 
   return comment;
