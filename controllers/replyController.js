@@ -56,6 +56,19 @@ exports.reply_get = asyncHandler(async (req, res, next) => {
     commentId,
   });
 
+  if (req.user) {
+    replies = await Promise.all(
+      replies.map(async (reply) => {
+        const like = await db.findUserLikeOnLikesBox({
+          likesBoxId: reply.likesBox.id,
+          authorId: req.user.id,
+        });
+
+        return { ...reply, userLikeStatus: like ? true : false };
+      })
+    );
+  }
+
   res.json({
     message: "Successfuly retrieved comment replies",
     replies,

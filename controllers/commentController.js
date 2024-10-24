@@ -61,6 +61,19 @@ exports.comments_get = [
       });
     }
 
+    if (req.user) {
+      comments = await Promise.all(
+        comments.map(async (comment) => {
+          const like = await db.findUserLikeOnLikesBox({
+            likesBoxId: comment.likesBox.id,
+            authorId: req.user.id,
+          });
+
+          return { ...comment, userLikeStatus: like ? true : false };
+        })
+      );
+    }
+
     res.json({
       message: comments.length
         ? "Successfuly retrieved post comments"

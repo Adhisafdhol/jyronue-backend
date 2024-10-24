@@ -70,8 +70,10 @@ exports.post_get = asyncHandler(async (req, res, next) => {
 
   res.json({
     message: "Successfully retrieved post",
-    post,
-    userLikeStatus,
+    post: {
+      ...post,
+      userLikeStatus,
+    },
   });
 });
 
