@@ -95,7 +95,7 @@ exports.comment_post = [
       });
 
       return res.status(422).json({
-        message: "Failed to create post",
+        message: "Failed to create comment",
         errors: errorsList,
       });
     }
