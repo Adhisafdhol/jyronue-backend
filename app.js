@@ -19,6 +19,7 @@ const indexRouter = require("./routes/index");
 const userRouter = require("./routes/user");
 const postRouter = require("./routes/post");
 const commentRouter = require("./routes/comment");
+const replyRouter = require("./routes/reply");
 
 const app = express();
 
@@ -50,6 +51,7 @@ app.use("/", indexRouter);
 app.use("/user", userRouter);
 app.use("/post", postRouter);
 app.use("/comment", commentRouter);
+app.use("/reply", replyRouter);
 
 app.use((req, res, next) => {
   const err = new Error("Not found");
