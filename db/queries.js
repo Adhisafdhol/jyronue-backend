@@ -462,7 +462,7 @@ exports.getCommentReplies = async ({ commentId }) => {
     },
     orderBy: [
       {
-        createdAt: "asc",
+        createdAt: "desc",
       },
     ],
   });
