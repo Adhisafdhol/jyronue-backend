@@ -521,3 +521,27 @@ exports.getLikesBoxWithId = async ({ id }) => {
 
   return likesBox;
 };
+
+exports.getUserProfile = async ({ username }) => {
+  const profile = await prisma.user.findFirst({
+    where: {
+      username: username,
+    },
+    select: {
+      id: true,
+      displayName: true,
+      username: true,
+      bio: true,
+      createdAt: true,
+      profileImage: true,
+      _count: {
+        select: {
+          followedBy: true,
+          following: true,
+        },
+      },
+    },
+  });
+
+  return profile;
+};
