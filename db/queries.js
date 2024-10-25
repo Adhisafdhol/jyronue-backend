@@ -327,6 +327,34 @@ exports.createNewReplyWithNoParent = async ({
       },
       content: content,
     },
+    include: {
+      author: {
+        select: {
+          displayName: true,
+          username: true,
+          profileImage: {
+            select: {
+              pictureUrl: true,
+            },
+          },
+        },
+      },
+      replyTo: {
+        select: {
+          username: true,
+        },
+      },
+      likesBox: {
+        select: {
+          id: true,
+          _count: {
+            select: {
+              likes: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   return reply;
@@ -365,6 +393,34 @@ exports.createNewReplyWithParent = async ({
         },
       },
       content: content,
+    },
+    include: {
+      author: {
+        select: {
+          displayName: true,
+          username: true,
+          profileImage: {
+            select: {
+              pictureUrl: true,
+            },
+          },
+        },
+      },
+      replyTo: {
+        select: {
+          username: true,
+        },
+      },
+      likesBox: {
+        select: {
+          id: true,
+          _count: {
+            select: {
+              likes: true,
+            },
+          },
+        },
+      },
     },
   });
 
