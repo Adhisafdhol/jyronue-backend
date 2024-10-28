@@ -1,11 +1,11 @@
 const asyncHandler = require("express-async-handler");
-const { check, body, validationResult } = require("express-validator");
+const { check, query, body, validationResult } = require("express-validator");
 const multer = require("multer");
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 const db = require("../db/queries");
 const supabaseDb = require("../db/supabaseQueries");
-const { convertFileName } = require("../utils/utils");
+const { convertFileName, isIsoString, isUUID } = require("../utils/utils");
 const sharp = require("sharp");
 
 const imageMimetype = ["image/jpeg", "image/png", "image/x-png"];
@@ -39,6 +39,37 @@ const postValidator = {
 
       return true;
     }),
+  cursor: query("cursor")
+    .trim()
+    .optional({
+      values: "falsy",
+    })
+    .bail()
+    .custom((value, { req }) => {
+      const cursor = value;
+      const createdAt = cursor ? cursor.split("_")[0] : null;
+      const id = cursor ? cursor.split("_")[1] : null;
+
+      if (!isIsoString(createdAt)) {
+        throw new Error("Your cursor date is not valid ISO string");
+      }
+
+      if (!isUUID(id)) {
+        throw new Error("Your cursor id is not a valid UUID");
+      }
+
+      return true;
+    }),
+  limit: query("limit", "Limit must be an integer")
+    .trim()
+    .optional({
+      values: "falsy",
+    })
+    .isInt({
+      min: 1,
+      max: 100,
+    })
+    .withMessage("Limit must be between 0 and 100"),
 };
 
 exports.post_get = asyncHandler(async (req, res, next) => {
@@ -153,6 +184,54 @@ exports.post_post = [
     res.json({
       message: "Successfully created a post",
       post,
+    });
+  }),
+];
+
+exports.user_posts_get = [
+  postValidator.limit,
+  postValidator.cursor,
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const errorsList = errors.array().map((err) => {
+        return { field: err.path, value: err.value, msg: err.msg };
+      });
+
+      return res.status(422).json({
+        message: "Failed to fetch user posts",
+        errors: errorsList,
+      });
+    }
+
+    const username = req.params.username;
+    const limit = req.query.limit ? Number(req.query.limit) : null;
+    const cursor = req.query.cursor
+      ? {
+          id: req.query.cursor.split("_")[1],
+          createdAt: req.query.cursor.split("_")[0],
+        }
+      : null;
+
+    const userPosts = await db.getUserPostsWithCursor({
+      username,
+      limit,
+      cursor,
+    });
+
+    const nextCursor = userPosts.length
+      ? `${userPosts[userPosts.length - 1].createdAt.toISOString()}_${
+          userPosts[userPosts.length - 1].id
+        }`
+      : false;
+
+    res.json({
+      message: userPosts.length
+        ? "Successfully fetched user posts"
+        : "No more posts to fetch from this user",
+      nextCursor: limit ? nextCursor : false,
+      userPosts,
     });
   }),
 ];

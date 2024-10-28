@@ -17,3 +17,9 @@ exports.isUUID = (value) => {
 
   return regex.test(value);
 };
+
+exports.isIsoString = (value) => {
+  const date = new Date(value);
+
+  return !Number.isNaN(date.valueOf()) && date.toISOString() === value;
+};

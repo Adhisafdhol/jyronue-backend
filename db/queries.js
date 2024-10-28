@@ -108,6 +108,49 @@ exports.getPostWithId = async ({ postid }) => {
   return post;
 };
 
+exports.getUserPostsWithCursor = async ({ username, limit, cursor }) => {
+  const createdAt = cursor ? cursor.createdAt : null;
+  const id = cursor ? cursor.id : null;
+
+  const userPosts = await prisma.post.findMany({
+    where: {
+      author: {
+        username: username,
+      },
+      ...(cursor
+        ? {
+            OR: [
+              {
+                AND: [
+                  {
+                    id: {
+                      gt: id,
+                    },
+                  },
+                  { createdAt: createdAt },
+                ],
+              },
+              {
+                createdAt: {
+                  lt: createdAt,
+                },
+              },
+            ],
+          }
+        : {}),
+    },
+    orderBy: [
+      { createdAt: "desc" },
+      {
+        id: "asc",
+      },
+    ],
+    ...(limit ? { take: limit } : {}),
+  });
+
+  return userPosts;
+};
+
 exports.createNewComment = async ({ authorId, content, postId }) => {
   const comment = await prisma.comment.create({
     data: {
