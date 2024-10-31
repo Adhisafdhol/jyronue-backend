@@ -565,10 +565,11 @@ exports.getLikesBoxWithId = async ({ id }) => {
   return likesBox;
 };
 
-exports.getUserProfile = async ({ username }) => {
+exports.getUserProfile = async ({ username, id }) => {
   const profile = await prisma.user.findFirst({
     where: {
-      username: username,
+      ...(username ? { username: username } : {}),
+      ...(id ? { id: id } : {}),
     },
     select: {
       id: true,

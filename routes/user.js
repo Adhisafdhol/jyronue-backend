@@ -15,7 +15,7 @@ router.get("/logout", userController.user_logout_get);
 
 router.post("/profile-image", userController.user_profile_post);
 
-router.use("/:username/profile", profileRouter);
+router.use("/profile", profileRouter);
 
 router.get("/:username/posts", postController.user_posts_get);
 
