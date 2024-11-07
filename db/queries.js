@@ -629,3 +629,26 @@ exports.updateUserProfile = async ({
 
   return profile;
 };
+
+exports.getFollows = async ({ followedById, followingId }) => {
+  console.log({ followedById, followingId });
+  follows = await prisma.follows.findFirst({
+    where: {
+      followedById: followedById,
+      followingId: followingId,
+    },
+  });
+
+  return follows;
+};
+
+exports.createFollows = async ({ followedById, followingId }) => {
+  follows = await prisma.follows.create({
+    data: {
+      followedById: followedById,
+      followingId: followingId,
+    },
+  });
+
+  return follows;
+};

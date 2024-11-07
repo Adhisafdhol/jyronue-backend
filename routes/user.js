@@ -5,6 +5,7 @@ const userController = require("../controllers/userController");
 const postController = require("../controllers/postController");
 
 const profileRouter = require("./profile");
+const followRouter = require("./follow");
 
 router.post("/signup", userController.user_signup_post);
 
@@ -18,5 +19,7 @@ router.post("/profile-image", userController.user_profile_post);
 router.use("/profile", profileRouter);
 
 router.get("/:username/posts", postController.user_posts_get);
+
+router.use("/follow", followRouter);
 
 module.exports = router;
