@@ -82,3 +82,64 @@ exports.follow_user_post = [
     });
   }),
 ];
+
+exports.unfollow_user_post = [
+  (req, res, next) => {
+    if (req.user) {
+      return next();
+    }
+
+    return res.status(401).json({
+      message: "you can't unfollow anyone when you are not logged in",
+    });
+  },
+  followValidation.username,
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const errorsList = errors.array().map((err) => {
+        return { field: err.path, value: err.value, msg: err.msg };
+      });
+
+      return res.status(422).json({
+        message: `Failed to unfollow ${
+          req.body.username ? req.body.username : ""
+        }`,
+        errors: errorsList,
+      });
+    }
+
+    const following = await db.getUserByUsername({
+      username: req.body.username,
+    });
+
+    if (following === null) {
+      return res.status(404).json({
+        message: `Failed to unfollow ${req.body.username}`,
+        error: "User with that username does't exist",
+      });
+    }
+
+    const previousFollows = await db.getFollows({
+      followedById: req.user.id,
+      followingId: following.id,
+    });
+
+    if (!previousFollows) {
+      return res.json({
+        message: "You haven't followed this user",
+      });
+    }
+
+    const follows = await db.deleteFollows({
+      followedById: req.user.id,
+      followingId: following.id,
+    });
+
+    res.json({
+      message: `Successfully unfollowed ${following.username}`,
+      follows,
+    });
+  }),
+];

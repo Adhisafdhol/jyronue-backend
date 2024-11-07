@@ -652,3 +652,16 @@ exports.createFollows = async ({ followedById, followingId }) => {
 
   return follows;
 };
+
+exports.deleteFollows = async ({ followedById, followingId }) => {
+  follows = await prisma.follows.delete({
+    where: {
+      followingId_followedById: {
+        followedById: followedById,
+        followingId: followingId,
+      },
+    },
+  });
+
+  return follows;
+};

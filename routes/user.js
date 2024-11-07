@@ -20,6 +20,6 @@ router.use("/profile", profileRouter);
 
 router.get("/:username/posts", postController.user_posts_get);
 
-router.use("/follow", followRouter);
+router.use("/", followRouter);
 
 module.exports = router;
