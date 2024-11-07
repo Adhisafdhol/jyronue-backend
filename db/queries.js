@@ -589,3 +589,43 @@ exports.getUserProfile = async ({ username, id }) => {
 
   return profile;
 };
+
+exports.updateUserProfile = async ({
+  id,
+  avatarUrl,
+  bannerUrl,
+  displayName,
+  bio,
+}) => {
+  const profile = await prisma.user.update({
+    where: {
+      id: id,
+    },
+    data: {
+      ...(displayName ? { displayName: displayName } : {}),
+      ...(bio ? { bio: bio } : { bio: null }),
+      ...(avatarUrl || bannerUrl
+        ? {
+            profileImage: {
+              update: {
+                data: {
+                  ...(avatarUrl ? { pictureUrl: avatarUrl } : {}),
+                  ...(bannerUrl ? { bannerUrl: bannerUrl } : {}),
+                },
+              },
+            },
+          }
+        : {}),
+    },
+    select: {
+      id: true,
+      username: true,
+      displayName: true,
+      bio: true,
+      createdAt: true,
+      profileImage: true,
+    },
+  });
+
+  return profile;
+};
