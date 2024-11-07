@@ -28,8 +28,8 @@ model User {
   bio          String?       @db.VarChar(255)
   profileImage profileImage?
   createdAt    DateTime      @default(now())
-  followedBy   Follows[]     @relation("followedBy")
-  following    Follows[]     @relation("following")
+  followedBy   Follows[]     @relation("following")
+  following    Follows[]     @relation("followedBy")
   posts        Post[]
   comments     Comment[]
   replies      Reply[]
