@@ -235,3 +235,46 @@ exports.user_posts_get = [
     });
   }),
 ];
+
+exports.posts_get = [
+  postValidator.limit,
+  postValidator.cursor,
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const errorsList = errors.array().map((err) => {
+        return { field: err.path, value: err.value, msg: err.msg };
+      });
+
+      return res.status(422).json({
+        message: "Failed to fetch posts",
+        errors: errorsList,
+      });
+    }
+
+    const limit = req.query.limit ? Number(req.query.limit) : null;
+    const cursor = req.query.cursor
+      ? {
+          id: req.query.cursor.split("_")[1],
+          createdAt: req.query.cursor.split("_")[0],
+        }
+      : null;
+
+    const posts = await db.getPostsWithCursor({ limit, cursor });
+
+    const nextCursor = posts.length
+      ? `${posts[posts.length - 1].createdAt.toISOString()}_${
+          posts[posts.length - 1].id
+        }`
+      : false;
+
+    res.json({
+      message: posts.length
+        ? "Successfully fetched posts"
+        : "No more posts to fetch",
+      nextCursor: limit ? nextCursor : false,
+      posts,
+    });
+  }),
+];

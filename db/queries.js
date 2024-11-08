@@ -665,3 +665,43 @@ exports.deleteFollows = async ({ followedById, followingId }) => {
 
   return follows;
 };
+
+exports.getPostsWithCursor = async ({ limit, cursor }) => {
+  const createdAt = cursor ? cursor.createdAt : null;
+  const id = cursor ? cursor.id : null;
+
+  const posts = await prisma.post.findMany({
+    where: {
+      ...(cursor
+        ? {
+            OR: [
+              {
+                AND: [
+                  {
+                    id: {
+                      gt: id,
+                    },
+                  },
+                  { createdAt: createdAt },
+                ],
+              },
+              {
+                createdAt: {
+                  lt: createdAt,
+                },
+              },
+            ],
+          }
+        : {}),
+    },
+    orderBy: [
+      { createdAt: "desc" },
+      {
+        id: "asc",
+      },
+    ],
+    ...(limit ? { take: limit } : {}),
+  });
+
+  return posts;
+};
