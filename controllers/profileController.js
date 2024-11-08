@@ -68,9 +68,22 @@ exports.profile_get = asyncHandler(async (req, res, next) => {
     });
   }
 
+  let isFollowing = false;
+
+  if (req.user) {
+    const follows = await db.getFollows({
+      followedById: req.user.id,
+      followingId: profile.id,
+    });
+
+    if (follows !== null) {
+      isFollowing = true;
+    }
+  }
+
   res.json({
     message: "Successfully retrieved user profile",
-    profile,
+    profile: { ...profile, isFollowing },
   });
 });
 
