@@ -278,3 +278,78 @@ exports.posts_get = [
     });
   }),
 ];
+
+exports.user_followings_posts_get = [
+  (req, res, next) => {
+    if (req.user) {
+      return next();
+    }
+
+    return res.status(401).json({
+      message:
+        "you can't fetch your followed users posts when you're not logged in",
+    });
+  },
+  postValidator.limit,
+  postValidator.cursor,
+  asyncHandler(async (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      const errorsList = errors.array().map((err) => {
+        return { field: err.path, value: err.value, msg: err.msg };
+      });
+
+      return res.status(422).json({
+        message: "Failed to fetch your followed users posts",
+        errors: errorsList,
+      });
+    }
+
+    const limit = req.query.limit ? Number(req.query.limit) : null;
+    const cursor = req.query.cursor
+      ? {
+          id: req.query.cursor.split("_")[1],
+          createdAt: req.query.cursor.split("_")[0],
+        }
+      : null;
+
+    const posts = await db.getFollowingPostsWithCursor({
+      followedById: req.user.id,
+      limit,
+      cursor,
+    });
+
+    const nextCursor = posts.length
+      ? `${posts[posts.length - 1].createdAt.toISOString()}_${
+          posts[posts.length - 1].id
+        }`
+      : false;
+
+    const user = req.user;
+
+    const mappedPosts = await Promise.all(
+      posts.map(async (post) => {
+        let userLikeStatus = false;
+        const userLike = await db.findUserLikeOnLikesBox({
+          authorId: user.id,
+          likesBoxId: post.likesBox.id,
+        });
+
+        if (userLike !== null) {
+          userLikeStatus = true;
+        }
+
+        return { ...post, userLikeStatus };
+      })
+    );
+
+    res.json({
+      message: posts.length
+        ? "Successfully fetched your followed users posts"
+        : "No more posts to fetch",
+      nextCursor: limit ? nextCursor : false,
+      posts: mappedPosts,
+    });
+  }),
+];

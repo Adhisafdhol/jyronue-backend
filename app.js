@@ -52,6 +52,7 @@ const postController = require("./controllers/postController");
 app.use("/", indexRouter);
 app.use("/user", userRouter);
 app.get("/posts", postController.posts_get);
+app.get("/posts/following", postController.user_followings_posts_get);
 app.use("/post", postRouter);
 app.use("/comment", commentRouter);
 app.use("/reply", replyRouter);

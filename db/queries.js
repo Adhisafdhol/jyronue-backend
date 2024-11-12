@@ -705,3 +705,83 @@ exports.getPostsWithCursor = async ({ limit, cursor }) => {
 
   return posts;
 };
+
+exports.getFollowingPostsWithCursor = async ({
+  followedById,
+  limit,
+  cursor,
+}) => {
+  const createdAt = cursor ? cursor.createdAt : null;
+  const id = cursor ? cursor.id : null;
+
+  const posts = await prisma.post.findMany({
+    where: {
+      author: {
+        followedBy: {
+          some: {
+            followedById: followedById,
+          },
+        },
+      },
+      ...(cursor
+        ? {
+            OR: [
+              {
+                AND: [
+                  {
+                    id: {
+                      gt: id,
+                    },
+                  },
+                  { createdAt: createdAt },
+                ],
+              },
+              {
+                createdAt: {
+                  lt: createdAt,
+                },
+              },
+            ],
+          }
+        : {}),
+    },
+    orderBy: [
+      { createdAt: "desc" },
+      {
+        id: "asc",
+      },
+    ],
+    ...(limit ? { take: limit } : {}),
+    include: {
+      content: true,
+      author: {
+        select: {
+          displayName: true,
+          username: true,
+          profileImage: {
+            select: {
+              pictureUrl: true,
+            },
+          },
+        },
+      },
+      likesBox: {
+        select: {
+          id: true,
+          _count: {
+            select: {
+              likes: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          comments: true,
+        },
+      },
+    },
+  });
+
+  return posts;
+};
