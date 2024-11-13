@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const { use } = require("bcrypt/promises");
 const prisma = new PrismaClient();
 
 exports.createUser = async ({ displayName, username, password }) => {
@@ -666,12 +667,21 @@ exports.deleteFollows = async ({ followedById, followingId }) => {
   return follows;
 };
 
-exports.getPostsWithCursor = async ({ limit, cursor }) => {
+exports.getPostsWithCursor = async ({ limit, cursor, userId }) => {
   const createdAt = cursor ? cursor.createdAt : null;
   const id = cursor ? cursor.id : null;
 
   const posts = await prisma.post.findMany({
     where: {
+      ...(userId
+        ? {
+            NOT: [
+              {
+                authorid: userId,
+              },
+            ],
+          }
+        : {}),
       ...(cursor
         ? {
             OR: [

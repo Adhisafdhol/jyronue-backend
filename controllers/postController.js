@@ -261,7 +261,9 @@ exports.posts_get = [
         }
       : null;
 
-    const posts = await db.getPostsWithCursor({ limit, cursor });
+    const userId = req.user ? req.user.id : null;
+
+    const posts = await db.getPostsWithCursor({ limit, cursor, userId });
 
     const nextCursor = posts.length
       ? `${posts[posts.length - 1].createdAt.toISOString()}_${
