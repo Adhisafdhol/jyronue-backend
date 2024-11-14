@@ -7,6 +7,7 @@ const db = require("../db/queries");
 const supabaseDb = require("../db/supabaseQueries");
 const { convertFileName, isIsoString, isUUID } = require("../utils/utils");
 const sharp = require("sharp");
+const sizeOf = require("image-size");
 
 const imageMimetype = ["image/jpeg", "image/png", "image/x-png"];
 
@@ -137,8 +138,32 @@ exports.post_post = [
 
     const user = req.user;
     const files = req.files.map((file) => convertFileName(file));
+
     files.forEach(async (file) => {
-      await supabaseDb.uploadFile({ user, from: "images", file });
+      let resizedFile = file;
+      const dimension = sizeOf(file.buffer);
+
+      if (dimension.width || dimension.height > 1080) {
+        let resizedBuffer;
+
+        if (dimension.width > dimension.height) {
+          resizedBuffer = await sharp(file.buffer)
+            .resize({
+              width: 1080,
+            })
+            .toBuffer();
+        } else {
+          resizedBuffer = await sharp(file.buffer)
+            .resize({
+              height: 1080,
+            })
+            .toBuffer();
+        }
+
+        resizedFile.buffer = resizedBuffer;
+      }
+
+      await supabaseDb.uploadFile({ user, from: "images", file: resizedFile });
     });
 
     const urls = files.map((file) => {
