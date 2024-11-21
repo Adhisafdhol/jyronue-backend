@@ -148,12 +148,14 @@ exports.post_post = [
 
         if (dimension.width > dimension.height) {
           resizedBuffer = await sharp(file.buffer)
+            .jpeg({ quality: 90 })
             .resize({
               width: 1080,
             })
             .toBuffer();
         } else {
           resizedBuffer = await sharp(file.buffer)
+            .jpeg({ quality: 90 })
             .resize({
               height: 1080,
             })
@@ -172,6 +174,7 @@ exports.post_post = [
 
     const thumbnail = files[0];
     const resizedThumbnail = await sharp(thumbnail.buffer)
+      .jpeg({ quality: 90 })
       .resize({
         width: 320,
         height: 320,

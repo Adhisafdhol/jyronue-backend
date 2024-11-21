@@ -137,6 +137,7 @@ exports.profile_post = [
 
     if (avatar) {
       const resizedBuffer = await sharp(avatar.buffer)
+        .jpeg({ quality: 90 })
         .resize({
           width: 128,
           height: 128,
@@ -155,6 +156,7 @@ exports.profile_post = [
 
     if (banner) {
       const resizedBuffer = await sharp(banner.buffer)
+        .jpeg({ quality: 90 })
         .resize({
           width: 1200,
           height: 400,
