@@ -41,6 +41,8 @@ app.use(
   session({
     cookie: {
       maxAge: 7 * 24 * 60 * 60 * 1000, // ms
+      sameSite: "none",
+      secure: true,
     },
     secret: process.env.SECRET,
     resave: true,
@@ -50,12 +52,6 @@ app.use(
       dbRecordIdIsSessionId: true,
       dbRecordIdFunction: undefined,
     }),
-    sameSite: "none",
-    ...(process.env.NODE_ENV === "production"
-      ? {
-          secure: true,
-        }
-      : {}),
   })
 );
 app.use(passport.session());
