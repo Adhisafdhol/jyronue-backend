@@ -32,7 +32,10 @@ const app = express();
 app.use(logger("dev"));
 
 app.use(helmet());
-app.use(limiter);
+
+if (process.env.NODE_ENV === "production") {
+  app.use(limiter);
+}
 
 app.use(
   session({
@@ -47,6 +50,12 @@ app.use(
       dbRecordIdIsSessionId: true,
       dbRecordIdFunction: undefined,
     }),
+    sameSite: "none",
+    ...(process.env.NODE_ENV === "production"
+      ? {
+          secure: true,
+        }
+      : {}),
   })
 );
 app.use(passport.session());
