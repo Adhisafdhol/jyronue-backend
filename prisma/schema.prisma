@@ -73,8 +73,8 @@ model Reply {
   updatedAt DateTime  @updatedAt
   replyTo   User      @relation("replyTo", fields: [replyToId], references: [id])
   replyToId String
-  author    User      @relation(fields: [authorid], references: [id])
-  authorid  String
+  author    User      @relation(fields: [authorId], references: [id])
+  authorId  String
   comment   Comment   @relation(fields: [commentId], references: [id])
   commentId String
   children  Reply[]   @relation("reply")
@@ -90,8 +90,8 @@ model Comment {
   id        String    @id @default(uuid())
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  author    User      @relation(fields: [authorid], references: [id])
-  authorid  String
+  author    User      @relation(fields: [authorId], references: [id])
+  authorId  String
   post      Post      @relation(fields: [postId], references: [id])
   postId    String
   likesBox  LikesBox?
@@ -116,8 +116,8 @@ model Image {
 
 model Post {
   id        String    @id @default(uuid())
-  author    User      @relation(fields: [authorid], references: [id])
-  authorid  String
+  author    User      @relation(fields: [authorId], references: [id])
+  authorId  String
   thumbnail String
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
