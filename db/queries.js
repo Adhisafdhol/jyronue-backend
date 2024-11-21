@@ -70,10 +70,10 @@ exports.createNewPost = async ({
   return createPost;
 };
 
-exports.getPostWithId = async ({ postid }) => {
+exports.getPostWithId = async ({ postId }) => {
   const post = await prisma.post.findFirst({
     where: {
-      id: postid,
+      id: postId,
     },
     include: {
       content: true,

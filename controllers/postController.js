@@ -74,9 +74,9 @@ const postValidator = {
 };
 
 exports.post_get = asyncHandler(async (req, res, next) => {
-  const postid = req.params.postid;
+  const postId = req.params.postid;
 
-  const post = await db.getPostWithId({ postid });
+  const post = await db.getPostWithId({ postId });
 
   if (post === null) {
     return res.json({
