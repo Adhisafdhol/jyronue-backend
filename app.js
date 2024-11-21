@@ -14,6 +14,12 @@ passport.serializeUser(passportConfig.serializeUser);
 passport.deserializeUser(passportConfig.deserializeUser);
 
 const cors = require("cors");
+const helmet = require("helmet");
+const RateLimit = require("express-rate-limit");
+const limiter = RateLimit({
+  windowMs: 1 * 60 * 1000,
+  max: 70,
+});
 
 const indexRouter = require("./routes/index");
 const userRouter = require("./routes/user");
@@ -24,6 +30,9 @@ const replyRouter = require("./routes/reply");
 const app = express();
 
 app.use(logger("dev"));
+
+app.use(helmet());
+app.use(limiter);
 
 app.use(
   session({
