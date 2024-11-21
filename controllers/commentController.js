@@ -42,8 +42,6 @@ exports.comments_get = [
 
     const postId = req.params.postid;
 
-    console.log({ cursor, limit });
-
     let comments;
     if (cursor) {
       comments = await db.getCommentsWithCursor({

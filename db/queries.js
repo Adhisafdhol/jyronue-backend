@@ -248,8 +248,6 @@ exports.getCommentsWithoutCursor = async ({ postId, limit }) => {
 exports.getCommentsWithCursor = async ({ postId, cursor, limit }) => {
   const { createdAt, id } = cursor;
 
-  console.log(cursor);
-
   const comments = await prisma.comment.findMany({
     where: {
       postId: postId,
@@ -632,7 +630,6 @@ exports.updateUserProfile = async ({
 };
 
 exports.getFollows = async ({ followedById, followingId }) => {
-  console.log({ followedById, followingId });
   follows = await prisma.follows.findFirst({
     where: {
       followedById: followedById,
