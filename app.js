@@ -37,6 +37,7 @@ if (process.env.NODE_ENV === "production") {
   app.use(limiter);
 }
 
+app.set("trust proxy", 1);
 app.use(
   session({
     cookie: {
