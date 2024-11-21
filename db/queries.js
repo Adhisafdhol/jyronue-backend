@@ -677,7 +677,7 @@ exports.getPostsWithCursor = async ({ limit, cursor, userId }) => {
         ? {
             NOT: [
               {
-                authorid: userId,
+                authorId: userId,
               },
             ],
           }
