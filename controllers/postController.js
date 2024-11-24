@@ -316,8 +316,10 @@ exports.user_followings_posts_get = [
     }
 
     return res.status(401).json({
-      message:
-        "you can't fetch your followed users posts when you're not logged in",
+      error: {
+        message:
+          "you can't fetch your followed users posts when you're not logged in",
+      },
     });
   },
   postValidator.limit,
