@@ -27,7 +27,7 @@ const userRouter = require("./routes/user");
 const postRouter = require("./routes/post");
 const commentRouter = require("./routes/comment");
 const replyRouter = require("./routes/reply");
-const nocache = require("nocache");
+
 const app = express();
 
 // compress all routes
@@ -35,7 +35,6 @@ app.use(compression());
 app.use(logger("dev"));
 
 app.use(helmet());
-app.use(nocache());
 
 if (process.env.NODE_ENV === "production") {
   app.use(limiter);
@@ -66,7 +65,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(cors({ credentials: true, origin: process.env.ORIGIN }));
-app.set("etag", false);
 
 const postController = require("./controllers/postController");
 
