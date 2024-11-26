@@ -61,7 +61,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use(cors({ credentials: true, origin: process.env.ORIGIN }));
-
+app.options("*", cors());
 const postController = require("./controllers/postController");
 
 app.use("/", indexRouter);
