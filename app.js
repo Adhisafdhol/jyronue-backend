@@ -60,7 +60,13 @@ app.use(passport.session());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use(cors({ credentials: true, origin: process.env.ORIGIN }));
+app.use(
+  cors({
+    credentials: true,
+    origin: process.env.ORIGIN,
+    preflightContinue: true,
+  })
+);
 app.options("*", cors());
 const postController = require("./controllers/postController");
 
