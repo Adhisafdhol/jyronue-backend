@@ -70,6 +70,18 @@ app.use(
 app.options("*", cors());
 const postController = require("./controllers/postController");
 
+// Set up No-Cache to prevent caching
+app.use((req, res, next) => {
+  res.setHeader("Surrogate-Control", "no-store");
+  res.setHeader(
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate"
+  );
+  res.setHeader("Expires", "0");
+
+  next();
+});
+
 app.use("/", indexRouter);
 app.use("/user", userRouter);
 app.get("/posts", postController.posts_get);
