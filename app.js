@@ -44,6 +44,7 @@ app.use(
       ...(process.env.NODE_ENV === "production"
         ? { sameSite: "none", secure: true }
         : {}),
+      partitioned: true,
     },
     secret: process.env.SECRET,
     resave: true,
