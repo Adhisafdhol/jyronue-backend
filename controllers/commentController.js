@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const { body, query, validationResult } = require("express-validator");
 const db = require("../db/queries");
+const { handleValidationError } = require("../utils/errorHandler");
 
 const commentValidator = {
   content: body("content", "Comment cannot be empty")
@@ -21,18 +22,8 @@ const commentValidator = {
 exports.comments_get = [
   commentValidator.limit,
   asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      const errorsList = errors.array().map((err) => {
-        return { field: err.path, value: err.value, msg: err.msg };
-      });
-
-      return res.status(422).json({
-        message: "Failed to fetch comments",
-        errors: errorsList,
-      });
-    }
+    // Handle validation error
+    handleValidationError({ req, res, message: "Failed to fetch comments" });
 
     const defaultLimit = 100;
     const cursor = req.query.cursor;
@@ -92,29 +83,21 @@ exports.comment_post = [
       return next();
     }
 
+    // Return an error when user tries to post without being logged in
     return res.status(401).json({
-      message: "you can't create a comment when you're not logged in",
+      error: {
+        message: "you can't create a comment when you're not logged in",
+      },
     });
   },
   commentValidator.content,
-  asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      const errorsList = errors.array().map((err) => {
-        return { field: err.path, value: err.value, msg: err.msg };
-      });
-
-      return res.status(422).json({
-        message: "Failed to create comment",
-        errors: errorsList,
-      });
-    }
+  asyncHandler(async (req, res) => {
+    // Handle validation error
+    handleValidationError({ req, res, message: "Failed to create comment" });
 
     const postId = req.params.postid;
     const authorId = req.user.id;
     const content = req.body.content;
-
     const comment = await db.createNewComment({
       postId,
       authorId,
