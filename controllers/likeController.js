@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 const { isUUID } = require("../utils/utils");
 const db = require("../db/queries");
+const { handleValidationError } = require("../utils/errorHandler");
 
 const likeValidator = {
   type: body("type", "Please include the type")
@@ -35,24 +36,20 @@ exports.like_post = [
     }
 
     return res.status(401).json({
-      message: "you can't like anything when you are not logged in",
+      error: {
+        message: "You can't like anything when you are not logged in",
+      },
     });
   },
   likeValidator.type,
   likeValidator.likesBoxId,
   asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      const errorsList = errors.array().map((err) => {
-        return { field: err.path, value: err.value, msg: err.msg };
-      });
-
-      return res.status(422).json({
-        message: `Failed to like ${req.body.type.toLowerCase() || "something"}`,
-        errors: errorsList,
-      });
-    }
+    // Handle validation error
+    handleValidationError({
+      req,
+      res,
+      message: `Failed to like ${req.body.type.toLowerCase() || "something"}`,
+    });
 
     const user = req.user;
     const likesBoxId = req.body.likesboxid;
@@ -63,10 +60,13 @@ exports.like_post = [
       likesBoxId,
     });
 
+    // Error message when user tries to like something the user have previously liked
     if (previousLike) {
-      return res.status(208).json({
-        message: `You already liked this ${type}`,
-        like: previousLike,
+      return res.status(422).json({
+        error: {
+          message: `Cannot like this ${type}`,
+          error: `Cannot like something you have previously liked`,
+        },
       });
     }
 
@@ -89,26 +89,22 @@ exports.unlike_post = [
     }
 
     return res.status(401).json({
-      message: "you can't unlike anything when you are not logged in",
+      error: {
+        message: "You can't unlike anything when you are not logged in",
+      },
     });
   },
   likeValidator.type,
   likeValidator.likesBoxId,
   asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      const errorsList = errors.array().map((err) => {
-        return { field: err.path, value: err.value, msg: err.msg };
-      });
-
-      return res.status(422).json({
-        message: `Failed to unlike ${
-          req.body.type.toLowerCase() || "something"
-        }`,
-        errors: errorsList,
-      });
-    }
+    // Handle validation error
+    handleValidationError({
+      req,
+      res,
+      message: `Failed to unlike ${
+        req.body.type?.toLowerCase() || "something"
+      }`,
+    });
 
     const user = req.user;
     const likesBoxId = req.body.likesboxid;
@@ -119,9 +115,15 @@ exports.unlike_post = [
       likesBoxId,
     });
 
+    // Error message when user tries to unlike something the user haven't previously liked
     if (!previousLike) {
-      return res.status(208).json({
-        message: `You haven't liked this ${type}`,
+      return res.status(422).json({
+        error: {
+          message: `Failed to unlike ${
+            req.body.type?.toLowerCase() || "something"
+          }`,
+          error: `Cannot unlike something you haven't previously liked`,
+        },
       });
     }
 
@@ -141,7 +143,9 @@ exports.likebox_get = asyncHandler(async (req, res, next) => {
 
   if (likesBox === null) {
     return res.status(404).json({
-      message: "Cannot find likes box with thar id",
+      error: {
+        message: "Cannot find likes box with that id",
+      },
     });
   }
 
@@ -158,7 +162,9 @@ exports.likebox_user_like_status_get = [
     }
 
     return res.status(401).json({
-      message: "you need to log to check your like status",
+      error: {
+        message: "You need to be logged in to check your like status",
+      },
     });
   },
   asyncHandler(async (req, res, next) => {
