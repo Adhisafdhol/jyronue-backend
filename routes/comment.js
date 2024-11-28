@@ -5,6 +5,6 @@ const replyController = require("../controllers/replyController");
 const likeRouter = require("./like");
 
 router.use("/:commentid", likeRouter);
-router.get("/:commentid/replies", replyController.reply_get);
+router.get("/:commentid/replies", replyController.replies_get);
 
 module.exports = router;

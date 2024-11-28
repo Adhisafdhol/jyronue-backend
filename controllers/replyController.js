@@ -37,7 +37,7 @@ const replyValidator = {
     }),
 };
 
-exports.reply_get = asyncHandler(async (req, res, next) => {
+exports.replies_get = asyncHandler(async (req, res, next) => {
   // Handle validation error
   handleValidationError({
     req,
