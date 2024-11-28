@@ -8,6 +8,7 @@ const supabaseDb = require("../db/supabaseQueries");
 const { convertFileName, isIsoString, isUUID } = require("../utils/utils");
 const sharp = require("sharp");
 const sizeOf = require("image-size");
+const { handleValidationError } = require("../utils/errorHandler");
 
 const imageMimetype = ["image/jpeg", "image/png", "image/x-png"];
 
@@ -78,10 +79,13 @@ exports.post_get = asyncHandler(async (req, res, next) => {
 
   const post = await db.getPostWithId({ postId });
 
+  // Return 404 error with error message when post is null
   if (post === null) {
-    return res.json({
-      message: "Failed to retrieve post",
-      error: "Cannot find a post with that id",
+    return res.status(404).json({
+      error: {
+        message: "Failed to retrieve post",
+        error: "Cannot find a post with that id",
+      },
     });
   }
 
@@ -116,33 +120,27 @@ exports.post_post = [
     }
 
     return res.status(401).json({
-      message: "you can't create a post when you're not logged in",
+      error: {
+        message: "you can't create a post when you're not logged in",
+      },
     });
   },
   upload.array("images"),
   postValidator.caption,
   postValidator.images,
   asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      const errorsList = errors.array().map((err) => {
-        return { field: err.path, value: err.value, msg: err.msg };
-      });
-
-      return res.status(422).json({
-        message: "Failed to create post",
-        errors: errorsList,
-      });
-    }
+    // Handle validation error
+    handleValidationError({ req, res, message: "Failed to create post" });
 
     const user = req.user;
     const files = req.files.map((file) => convertFileName(file));
 
+    // Resize images and upload it to supabase
     files.forEach(async (file) => {
       let resizedFile = file;
       const dimension = sizeOf(file.buffer);
 
+      // Resize image to having maximum 1080px length on its longest side
       if (dimension.width || dimension.height > 1080) {
         let resizedBuffer;
 
@@ -168,10 +166,12 @@ exports.post_post = [
       await supabaseDb.uploadFile({ user, from: "images", file: resizedFile });
     });
 
+    // Get images public url
     const urls = files.map((file) => {
       return supabaseDb.getPublicUrl({ user, file, from: "images" });
     });
 
+    // Create a thumbnail for the post
     const thumbnail = files[0];
     const resizedThumbnail = await sharp(thumbnail.buffer)
       .jpeg({ quality: 90 })
@@ -188,6 +188,7 @@ exports.post_post = [
       file: thumbnail,
     });
 
+    // get thumbnail public url
     const thumbnailUrl = supabaseDb.getPublicUrl({
       user,
       file: thumbnail,
@@ -220,18 +221,12 @@ exports.user_posts_get = [
   postValidator.limit,
   postValidator.cursor,
   asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      const errorsList = errors.array().map((err) => {
-        return { field: err.path, value: err.value, msg: err.msg };
-      });
-
-      return res.status(422).json({
-        message: "Failed to fetch user posts",
-        errors: errorsList,
-      });
-    }
+    // Handle validation error
+    handleValidationError({
+      req,
+      res,
+      message: "Failed to fetch user posts",
+    });
 
     const username = req.params.username;
     const limit = req.query.limit ? Number(req.query.limit) : null;
@@ -268,18 +263,7 @@ exports.posts_get = [
   postValidator.limit,
   postValidator.cursor,
   asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      const errorsList = errors.array().map((err) => {
-        return { field: err.path, value: err.value, msg: err.msg };
-      });
-
-      return res.status(422).json({
-        message: "Failed to fetch posts",
-        errors: errorsList,
-      });
-    }
+    handleValidationError({ req, res, message: "Failed to fetch posts" });
 
     const limit = req.query.limit ? Number(req.query.limit) : null;
     const cursor = req.query.cursor
@@ -325,18 +309,11 @@ exports.user_followings_posts_get = [
   postValidator.limit,
   postValidator.cursor,
   asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      const errorsList = errors.array().map((err) => {
-        return { field: err.path, value: err.value, msg: err.msg };
-      });
-
-      return res.status(422).json({
-        message: "Failed to fetch your followed users posts",
-        errors: errorsList,
-      });
-    }
+    handleValidationError({
+      req,
+      res,
+      message: "Failed to fetch your followed users posts",
+    });
 
     const limit = req.query.limit ? Number(req.query.limit) : null;
     const cursor = req.query.cursor
@@ -360,6 +337,7 @@ exports.user_followings_posts_get = [
 
     const user = req.user;
 
+    // Get the like status of the posts
     const mappedPosts = await Promise.all(
       posts.map(async (post) => {
         let userLikeStatus = false;
