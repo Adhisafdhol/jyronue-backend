@@ -8,6 +8,7 @@ const supabaseDb = require("../db/supabaseQueries");
 const { convertFileName } = require("../utils/utils");
 const sharp = require("sharp");
 const { use } = require("passport");
+const { handleValidationError } = require("../utils/errorHandler");
 
 const imageMimetype = ["image/jpeg", "image/png", "image/x-png"];
 
@@ -56,7 +57,9 @@ exports.profile_get = asyncHandler(async (req, res, next) => {
 
   if (!username && !id) {
     return res.status(422).json({
-      message: "Please provide username or id",
+      error: {
+        message: "Please provide username or id",
+      },
     });
   }
 
@@ -64,10 +67,13 @@ exports.profile_get = asyncHandler(async (req, res, next) => {
 
   if (profile === null) {
     return res.status(404).json({
-      message: "User profile with that username or id doesn't exist",
+      error: {
+        message: "User profile with that username or id doesn't exist",
+      },
     });
   }
 
+  // Check if the current user is following the profile user
   let isFollowing = false;
 
   if (req.user) {
@@ -94,8 +100,10 @@ exports.profile_post = [
     }
 
     res.status(401).json({
-      message: "Cannot update your profile",
-      error: "You are not logged in",
+      error: {
+        message: "Failed to update profile",
+        error: "You are not logged in",
+      },
     });
   },
   upload.fields([
@@ -107,18 +115,12 @@ exports.profile_post = [
   profileValidator.display_name,
   profileValidator.bio,
   asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      const errorsList = errors.array().map((err) => {
-        return { field: err.path, value: err.value, msg: err.msg };
-      });
-
-      return res.status(422).json({
-        message: "Failed to update your profile",
-        errors: errorsList,
-      });
-    }
+    // Handle validation error
+    handleValidationError({
+      req,
+      res,
+      message: "Failed to update your profile",
+    });
 
     const user = req.user;
     const avatar = req.files.avatar
@@ -136,6 +138,7 @@ exports.profile_post = [
     });
 
     if (avatar) {
+      // Resize avatar image size
       const resizedBuffer = await sharp(avatar.buffer)
         .jpeg({ quality: 90 })
         .resize({
@@ -146,6 +149,7 @@ exports.profile_post = [
         .toBuffer();
       avatar.buffer = resizedBuffer;
 
+      // Upload avatar to supabase
       await supabaseDb.uploadFile({ file: avatar, from: "profiles", user });
       avatarUrl = supabaseDb.getPublicUrl({
         user,
@@ -155,6 +159,7 @@ exports.profile_post = [
     }
 
     if (banner) {
+      // Resize banner size
       const resizedBuffer = await sharp(banner.buffer)
         .jpeg({ quality: 90 })
         .resize({
@@ -165,6 +170,7 @@ exports.profile_post = [
         .toBuffer();
       banner.buffer = resizedBuffer;
 
+      // upload banner to supabase
       await supabaseDb.uploadFile({ file: banner, from: "banners", user });
       bannerUrl = supabaseDb.getPublicUrl({
         user,
