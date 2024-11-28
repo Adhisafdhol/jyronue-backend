@@ -1,6 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 const db = require("../db/queries");
+const { handleValidationError } = require("../utils/errorHandler");
 
 const followValidation = {
   username: body("username", "Please provide username of the user to follow")
@@ -29,34 +30,31 @@ exports.follow_user_post = [
     }
 
     return res.status(401).json({
-      message: "you can't follow anyone when you are not logged in",
+      error: {
+        message: "you can't follow anyone when you are not logged in",
+      },
     });
   },
   followValidation.username,
   asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      const errorsList = errors.array().map((err) => {
-        return { field: err.path, value: err.value, msg: err.msg };
-      });
-
-      return res.status(422).json({
-        message: `Failed to follow ${
-          req.body.username ? req.body.username : ""
-        }`,
-        errors: errorsList,
-      });
-    }
+    // Handle validation error
+    handleValidationError({
+      req,
+      res,
+      message: `Failed to follow ${req.body.username ? req.body.username : ""}`,
+    });
 
     const following = await db.getUserByUsername({
       username: req.body.username,
     });
 
+    // Error message for trying to follow null user
     if (following === null) {
       return res.status(404).json({
-        message: `Failed to follow ${req.body.username}`,
-        error: "User with that username does't exist",
+        error: {
+          message: `Failed to follow ${req.body.username}`,
+          error: "User with that username does't exist",
+        },
       });
     }
 
@@ -65,9 +63,14 @@ exports.follow_user_post = [
       followingId: following.id,
     });
 
+    // Error message for trying to follow the same user more than once
     if (previousFollows) {
       return res.json({
-        message: "You have followed this user",
+        error: {
+          message: "Failed to follow ${req.body.username}",
+          error:
+            "You have already followed this user, you can't follow the same user more than once",
+        },
       });
     }
 
@@ -90,34 +93,33 @@ exports.unfollow_user_post = [
     }
 
     return res.status(401).json({
-      message: "you can't unfollow anyone when you are not logged in",
+      error: {
+        message: "You can't unfollow anyone when you are not logged in",
+      },
     });
   },
   followValidation.username,
   asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      const errorsList = errors.array().map((err) => {
-        return { field: err.path, value: err.value, msg: err.msg };
-      });
-
-      return res.status(422).json({
-        message: `Failed to unfollow ${
-          req.body.username ? req.body.username : ""
-        }`,
-        errors: errorsList,
-      });
-    }
+    // Handler validation error
+    handleValidationError({
+      req,
+      res,
+      message: `Failed to unfollow ${
+        req.body.username ? req.body.username : ""
+      }`,
+    });
 
     const following = await db.getUserByUsername({
       username: req.body.username,
     });
 
+    // Error message when trying to unfollow a user that doesn't exist
     if (following === null) {
       return res.status(404).json({
-        message: `Failed to unfollow ${req.body.username}`,
-        error: "User with that username does't exist",
+        error: {
+          message: `Failed to unfollow ${req.body.username}`,
+          error: "User with that username does't exist",
+        },
       });
     }
 
@@ -126,9 +128,13 @@ exports.unfollow_user_post = [
       followingId: following.id,
     });
 
+    // Error message when trying to unfollow a user when the user aren't currently following that user.
     if (!previousFollows) {
       return res.json({
-        message: "You haven't followed this user",
+        error: {
+          message: "You haven't followed this user",
+          error: "You can't unfollow a user you aren't currently following",
+        },
       });
     }
 
