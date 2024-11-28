@@ -50,7 +50,7 @@ exports.follow_user_post = [
 
     // Error message for trying to follow null user
     if (following === null) {
-      return res.status(404).json({
+      return res.status(422).json({
         error: {
           message: `Failed to follow ${req.body.username}`,
           error: "User with that username does't exist",
@@ -65,7 +65,7 @@ exports.follow_user_post = [
 
     // Error message for trying to follow the same user more than once
     if (previousFollows) {
-      return res.json({
+      return res.status(422).json({
         error: {
           message: "Failed to follow ${req.body.username}",
           error:
@@ -115,7 +115,7 @@ exports.unfollow_user_post = [
 
     // Error message when trying to unfollow a user that doesn't exist
     if (following === null) {
-      return res.status(404).json({
+      return res.status(422).json({
         error: {
           message: `Failed to unfollow ${req.body.username}`,
           error: "User with that username does't exist",
@@ -130,7 +130,7 @@ exports.unfollow_user_post = [
 
     // Error message when trying to unfollow a user when the user aren't currently following that user.
     if (!previousFollows) {
-      return res.json({
+      return res.status(422).json({
         error: {
           message: "You haven't followed this user",
           error: "You can't unfollow a user you aren't currently following",
