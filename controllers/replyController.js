@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const { body, validationResult } = require("express-validator");
 const db = require("../db/queries");
 const { isUUID } = require("../utils/utils");
+const { handleValidationError } = require("../utils/errorHandler");
 
 const replyValidator = {
   content: body("content", "Reply cannot be empty")
@@ -37,18 +38,12 @@ const replyValidator = {
 };
 
 exports.reply_get = asyncHandler(async (req, res, next) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    const errorsList = errors.array().map((err) => {
-      return { field: err.path, value: err.value, msg: err.msg };
-    });
-
-    return res.status(422).json({
-      message: "Failed to fetch replies",
-      errors: errorsList,
-    });
-  }
+  // Handle validation error
+  handleValidationError({
+    req,
+    res,
+    message: "Failed to fetch replies",
+  });
 
   const commentId = req.params.commentid;
 
@@ -56,6 +51,7 @@ exports.reply_get = asyncHandler(async (req, res, next) => {
     commentId,
   });
 
+  // If user is authenticated check the user like status on each reply
   if (req.user) {
     replies = await Promise.all(
       replies.map(async (reply) => {
@@ -82,25 +78,17 @@ exports.reply_post = [
     }
 
     return res.status(401).json({
-      message: "you can't create a reply when you're not logged in",
+      error: {
+        message: "You cannot create a reply when you're not logged in",
+      },
     });
   },
   replyValidator.content,
   replyValidator.replyToId,
   replyValidator.parentId,
   asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      const errorsList = errors.array().map((err) => {
-        return { field: err.path, value: err.value, msg: err.msg };
-      });
-
-      return res.status(422).json({
-        message: "Failed to create reply",
-        errors: errorsList,
-      });
-    }
+    // Handle validation error
+    handleValidationError({ req, res, message: "Failed to create reply" });
 
     const postId = req.params.postid;
     const commentId = req.params.commentid;
@@ -112,6 +100,7 @@ exports.reply_post = [
     let reply;
 
     if (parentId) {
+      // parentId means the reply is replying to another reply instead of a comment
       reply = await db.createNewReplyWithParent({
         authorId,
         postId,
