@@ -91,6 +91,7 @@ app.use("/post", postRouter);
 app.use("/comment", commentRouter);
 app.use("/reply", replyRouter);
 
+// Handle 404 error
 app.use((req, res, next) => {
   const err = new Error("Not found");
   err.status = 404;
@@ -103,12 +104,14 @@ app.use((err, req, res, next) => {
   // Send error message
   res.status(err.status || 500);
   res.json({
-    error:
-      req.app.get("env") === "development"
-        ? err.message
-        : err.status < 500
-        ? err.message
-        : "server error",
+    error: {
+      message:
+        req.app.get("env") === "development"
+          ? err.message
+          : err.status < 500
+          ? err.message
+          : "Server error",
+    },
   });
 });
 
