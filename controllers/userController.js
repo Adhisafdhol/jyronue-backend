@@ -9,6 +9,7 @@ const upload = multer({ storage: storage });
 const supabaseDb = require("../db/supabaseQueries");
 const { convertFileName } = require("../utils/utils");
 const sharp = require("sharp");
+const { handleValidationError } = require("../utils/errorHandler");
 
 const imageMimetype = ["image/jpeg", "image/png", "image/x-png"];
 
@@ -113,19 +114,14 @@ exports.user_signup_post = [
   userValidator.username_signup,
   userValidator.password,
   asyncHandler((req, res) => {
-    const errors = validationResult(req);
+    // Handle validation error
+    handleValidationError({
+      req,
+      res,
+      message: "Failed to create user account",
+    });
 
-    if (!errors.isEmpty()) {
-      const errorsList = errors.array().map((err) => {
-        return { field: err.path, value: err.value, msg: err.msg };
-      });
-
-      return res.status(422).json({
-        message: "Failed to create user account",
-        errors: errorsList,
-      });
-    }
-
+    // Hash password
     bcrypt.hash(
       req.body.password,
       10,
@@ -157,11 +153,14 @@ exports.user_login_get = (req, res, next) => {
   if (messages) {
     delete req.session.messages;
 
+    // Handle field validation error message
     return res.status(401).json({
-      message: "Failed to log in",
       error: {
-        field: messages[0].includes("username") ? "username" : "password",
-        msg: messages[0],
+        message: "Failed to log in",
+        error: {
+          field: messages[0].includes("username") ? "username" : "password",
+          msg: messages[0],
+        },
       },
     });
   }
@@ -176,13 +175,16 @@ exports.user_login_get = (req, res, next) => {
   }
 
   res.json({
-    message: "failed to log in",
-    error: "You are not logged in",
+    error: {
+      message: "Failed to log in",
+      error: "You are not logged in",
+    },
   });
 };
 
 exports.user_login_post = [
   (req, res, next) => {
+    // Redirect to login get if the user already logged in
     if (req.user) {
       return res.redirect("/user/login");
     }
@@ -192,18 +194,12 @@ exports.user_login_post = [
   userValidator.username_login,
   userValidator.password,
   (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      const errorsList = errors.array().map((err) => {
-        return { field: err.path, value: err.value, msg: err.msg };
-      });
-
-      return res.status(422).json({
-        message: "Failed to log in",
-        errors: errorsList,
-      });
-    }
+    // Handle validation error
+    handleValidationError({
+      req,
+      res,
+      message: "Failed to log in",
+    });
 
     next();
   },
@@ -216,16 +212,17 @@ exports.user_login_post = [
 
 exports.user_logout_get = [
   (req, res, next) => {
-    if (req.user) {
-      return next();
-    }
-
-    res.status(204).json({
-      message: "No user to log out",
-    });
-  },
-  (req, res, next) => {
     const user = req.user;
+
+    // If user tries to log out when the user hasn't logged in send error response
+    if (!user) {
+      return res.status(422).json({
+        error: {
+          message: "Failed to log out",
+          error: "You cannot log out when you haven't logged in",
+        },
+      });
+    }
 
     req.logout((err) => {
       if (err) {
@@ -245,25 +242,21 @@ exports.user_profile_post = [
     }
 
     return res.status(401).json({
-      message: "you can't update profile picture when you're not logged in",
+      error: {
+        message: "You can't update profile picture when you're not logged in",
+      },
     });
   },
   upload.single("image"),
   userValidator.profileImageType,
   userValidator.profileImage,
   asyncHandler(async (req, res, next) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      const errorsList = errors.array().map((err) => {
-        return { field: err.path, value: err.value, msg: err.msg };
-      });
-
-      return res.status(422).json({
-        message: "Failed to update profile picture",
-        errors: errorsList,
-      });
-    }
+    // Handler validation error
+    handleValidationError({
+      req,
+      res,
+      message: "Failed to update profile picture",
+    });
 
     const user = req.user;
     const type = req.query.type;
