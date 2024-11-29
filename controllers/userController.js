@@ -121,13 +121,20 @@ exports.user_signup_post = [
       message: "Failed to create user account",
     });
 
+    const errors = validationResult(req);
+
+    // End the function if errors is not empty
+    if (!errors.isEmpty()) {
+      return;
+    }
+
     // Hash password
     bcrypt.hash(
       req.body.password,
       10,
       asyncHandler(async (err, hashedPassword) => {
         if (err) {
-          next(err);
+          return next(err);
         }
 
         const username = req.body.username;
@@ -201,6 +208,13 @@ exports.user_login_post = [
       message: "Failed to log in",
     });
 
+    const errors = validationResult(req);
+
+    // End the function if errors is not empty
+    if (!errors.isEmpty()) {
+      return;
+    }
+
     next();
   },
   passport.authenticate("local", {
@@ -257,6 +271,13 @@ exports.user_profile_post = [
       res,
       message: "Failed to update profile picture",
     });
+
+    const errors = validationResult(req);
+
+    // End the function if errors is not empty
+    if (!errors.isEmpty()) {
+      return;
+    }
 
     const user = req.user;
     const type = req.query.type;

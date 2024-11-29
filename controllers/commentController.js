@@ -25,6 +25,13 @@ exports.comments_get = [
     // Handle validation error
     handleValidationError({ req, res, message: "Failed to fetch comments" });
 
+    const errors = validationResult(req);
+
+    // End the function if errors is not empty
+    if (!errors.isEmpty()) {
+      return;
+    }
+
     const defaultLimit = 100;
     const cursor = req.query.cursor;
     const createdAt = cursor ? cursor.split("_")[0] : null;
@@ -50,6 +57,7 @@ exports.comments_get = [
       });
     }
 
+    // Check the user like status on the comment if the user is authenticated
     if (req.user) {
       comments = await Promise.all(
         comments.map(async (comment) => {
@@ -94,6 +102,13 @@ exports.comment_post = [
   asyncHandler(async (req, res) => {
     // Handle validation error
     handleValidationError({ req, res, message: "Failed to create comment" });
+
+    const errors = validationResult(req);
+
+    // End the function if errors is not empty
+    if (!errors.isEmpty()) {
+      return;
+    }
 
     const postId = req.params.postid;
     const authorId = req.user.id;

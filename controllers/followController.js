@@ -44,6 +44,13 @@ exports.follow_user_post = [
       message: `Failed to follow ${req.body.username ? req.body.username : ""}`,
     });
 
+    const errors = validationResult(req);
+
+    // End the function if errors is not empty
+    if (!errors.isEmpty()) {
+      return;
+    }
+
     const following = await db.getUserByUsername({
       username: req.body.username,
     });
@@ -108,6 +115,13 @@ exports.unfollow_user_post = [
         req.body.username ? req.body.username : ""
       }`,
     });
+
+    const errors = validationResult(req);
+
+    // End the function if errors is not empty
+    if (!errors.isEmpty()) {
+      return;
+    }
 
     const following = await db.getUserByUsername({
       username: req.body.username,

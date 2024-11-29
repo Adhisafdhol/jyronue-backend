@@ -51,6 +51,13 @@ exports.like_post = [
       message: `Failed to like ${req.body.type.toLowerCase() || "something"}`,
     });
 
+    const errors = validationResult(req);
+
+    // End the function if errors is not empty
+    if (!errors.isEmpty()) {
+      return;
+    }
+
     const user = req.user;
     const likesBoxId = req.body.likesboxid;
     const type = req.body.type.toLowerCase();
@@ -105,6 +112,13 @@ exports.unlike_post = [
         req.body.type?.toLowerCase() || "something"
       }`,
     });
+
+    const errors = validationResult(req);
+
+    // End the function if errors is not empty
+    if (!errors.isEmpty()) {
+      return;
+    }
 
     const user = req.user;
     const likesBoxId = req.body.likesboxid;

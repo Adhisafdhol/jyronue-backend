@@ -45,6 +45,13 @@ exports.replies_get = asyncHandler(async (req, res, next) => {
     message: "Failed to fetch replies",
   });
 
+  const errors = validationResult(req);
+
+  // End the function if errors is not empty
+  if (!errors.isEmpty()) {
+    return;
+  }
+
   const commentId = req.params.commentid;
 
   let replies = await db.getCommentReplies({
@@ -89,6 +96,13 @@ exports.reply_post = [
   asyncHandler(async (req, res, next) => {
     // Handle validation error
     handleValidationError({ req, res, message: "Failed to create reply" });
+
+    const errors = validationResult(req);
+
+    // End the function if errors is not empty
+    if (!errors.isEmpty()) {
+      return;
+    }
 
     const postId = req.params.postid;
     const commentId = req.params.commentid;

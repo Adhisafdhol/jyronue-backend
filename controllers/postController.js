@@ -91,6 +91,7 @@ exports.post_get = asyncHandler(async (req, res, next) => {
 
   let userLikeStatus = false;
 
+  // Check the user like status on the post if the user is authenticated
   if (req.user) {
     const user = req.user;
 
@@ -131,6 +132,13 @@ exports.post_post = [
   asyncHandler(async (req, res, next) => {
     // Handle validation error
     handleValidationError({ req, res, message: "Failed to create post" });
+
+    const errors = validationResult(req);
+
+    // End the function if errors is not empty
+    if (!errors.isEmpty()) {
+      return;
+    }
 
     const user = req.user;
     const files = req.files.map((file) => convertFileName(file));
@@ -228,6 +236,13 @@ exports.user_posts_get = [
       message: "Failed to fetch user posts",
     });
 
+    const errors = validationResult(req);
+
+    // End the function if errors is not empty
+    if (!errors.isEmpty()) {
+      return;
+    }
+
     const username = req.params.username;
     const limit = req.query.limit ? Number(req.query.limit) : null;
     const cursor = req.query.cursor
@@ -264,6 +279,13 @@ exports.posts_get = [
   postValidator.cursor,
   asyncHandler(async (req, res, next) => {
     handleValidationError({ req, res, message: "Failed to fetch posts" });
+
+    const errors = validationResult(req);
+
+    // End the function if errors is not empty
+    if (!errors.isEmpty()) {
+      return;
+    }
 
     const limit = req.query.limit ? Number(req.query.limit) : null;
     const cursor = req.query.cursor
@@ -314,6 +336,13 @@ exports.user_followings_posts_get = [
       res,
       message: "Failed to fetch your followed users posts",
     });
+
+    const errors = validationResult(req);
+
+    // End the function if errors is not empty
+    if (!errors.isEmpty()) {
+      return;
+    }
 
     const limit = req.query.limit ? Number(req.query.limit) : null;
     const cursor = req.query.cursor

@@ -122,6 +122,13 @@ exports.profile_post = [
       message: "Failed to update your profile",
     });
 
+    const errors = validationResult(req);
+
+    // End the function if errors is not empty
+    if (!errors.isEmpty()) {
+      return;
+    }
+
     const user = req.user;
     const avatar = req.files.avatar
       ? convertFileName(req.files.avatar[0])
