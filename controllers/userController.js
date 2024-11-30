@@ -191,9 +191,14 @@ exports.user_login_get = (req, res, next) => {
 
 exports.user_login_post = [
   (req, res, next) => {
-    // Redirect to login get if the user already logged in
+    //If the user has beeen authenticated skip input validation
     if (req.user) {
-      return res.redirect("/user/login");
+      return res.json({
+        message: `Successfully logged in as ${user.username}`,
+        user: {
+          id: user.id,
+        },
+      });
     }
 
     next();
