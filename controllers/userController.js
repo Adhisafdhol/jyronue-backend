@@ -155,26 +155,9 @@ exports.user_signup_post = [
 ];
 
 exports.user_login_get = (req, res, next) => {
-  const messages = req.session.messages;
-
-  if (messages) {
-    delete req.session.messages;
-
-    // Handle field validation error message
-    return res.status(401).json({
-      error: {
-        message: "Failed to log in",
-        error: {
-          field: messages[0].includes("username") ? "username" : "password",
-          msg: messages[0],
-        },
-      },
-    });
-  }
-
   if (req.user) {
     return res.json({
-      message: `Successfully logged in as ${req.user.username}`,
+      message: `You are authenticated`,
       user: {
         id: req.user.id,
       },
@@ -182,10 +165,8 @@ exports.user_login_get = (req, res, next) => {
   }
 
   res.json({
-    error: {
-      message: "Failed to log in",
-      error: "You are not logged in",
-    },
+    message: "You are not authenticated",
+    user: false,
   });
 };
 
