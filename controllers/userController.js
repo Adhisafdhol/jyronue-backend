@@ -215,13 +215,35 @@ exports.user_login_post = [
       return;
     }
 
-    next();
+    passport.authenticate("local", (err, user, info) => {
+      if (err) {
+        return next(err);
+      }
+
+      req.logIn(user, () => {
+        if (!user) {
+          return res.status(401).json({
+            error: {
+              message: "Failed to log in",
+              error: {
+                field: info.message.includes("username")
+                  ? "username"
+                  : "password",
+                msg: info.message,
+              },
+            },
+          });
+        }
+
+        res.json({
+          message: `Successfully logged in as ${user.username}`,
+          user: {
+            id: user.id,
+          },
+        });
+      });
+    })(req, res, next);
   },
-  passport.authenticate("local", {
-    successRedirect: "/user/login",
-    failureRedirect: "/user/login",
-    failureMessage: true,
-  }),
 ];
 
 exports.user_logout_get = [
