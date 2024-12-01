@@ -20,6 +20,7 @@ const limiter = RateLimit({
   windowMs: 1 * 60 * 1000,
   max: 70,
 });
+const compression = require("compression");
 
 const indexRouter = require("./routes/index");
 const userRouter = require("./routes/user");
@@ -28,6 +29,9 @@ const commentRouter = require("./routes/comment");
 const replyRouter = require("./routes/reply");
 
 const app = express();
+
+app.use(compression());
+
 app.use(logger("dev"));
 
 app.use(helmet());
@@ -38,7 +42,7 @@ if (process.env.NODE_ENV === "production") {
 
 app.set("trust proxy", 1);
 
-app.disable("etag");
+app.disable("etag ");
 
 app.use(
   session({
